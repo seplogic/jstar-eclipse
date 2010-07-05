@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="true"
+            id="com.jstar.objectContribution1"
+            nameFilter="*.java"
+            objectClass="org.eclipse.core.resources.IFile">
+         <action
+               class="com.jstar.actions.VerificationAction"
+               enablesFor="1"
+               icon="icons/jStar.gif"
+               id="com.jstar.verification.action"
+               label="Verify"
+               style="push"
+               tooltip="Verify java class">
+         </action>
+      </objectContribution>
+   </extension>
+
+</plugin>

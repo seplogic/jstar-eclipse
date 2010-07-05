@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Jstar
+Bundle-SymbolicName: com.jstar_eclipse;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: com.jstar.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.core.resources;bundle-version="3.5.2",
+ ca.mcgill.sable.soot;bundle-version="2.4.0"
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ClassPath: lib/sootclasses-2.4.0.jar,
+ .,
+ lib/polyglotclasses-1.3.5.jar,
+ lib/jasminclasses-2.4.0.jar
+Import-Package: org.eclipse.ui.console
