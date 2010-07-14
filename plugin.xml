@@ -5,19 +5,47 @@
          point="org.eclipse.ui.popupMenus">
       <objectContribution
             adaptable="true"
-            id="com.jstar.objectContribution1"
+            id="com.jstar.eclipse.objectContribution1"
             nameFilter="*.java"
             objectClass="org.eclipse.core.resources.IFile">
          <action
-               class="com.jstar.actions.VerificationAction"
+               class="com.jstar.eclipse.actions.VerificationAction"
                enablesFor="1"
                icon="icons/jStar.gif"
-               id="com.jstar.verification.action"
+               id="com.jstar.eclipse.verification.action"
                label="Verify"
                style="push"
                tooltip="Verify java class">
          </action>
       </objectContribution>
+   </extension>
+   <extension
+         id="jstar.verification.marker"
+         name="jStar verification error"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <super
+            type="org.eclipse.core.resources.textmarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="com.jstar.eclipse.preferences.Configuration"
+            id="com.jstar.eclipse.preferences.Configuration"
+            name="jStar Configuration">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="com.jstar.eclipse.preferences.PreferenceInitializer">
+      </initializer>
    </extension>
 
 </plugin>
