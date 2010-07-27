@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 
 import com.jstar.eclipse.preferences.PreferenceConstants;
@@ -48,45 +48,57 @@ public class JStar {
 			return cmdOption;
 		}		
 	}
+	
+	private String removeFileExtension(final String fileName) {
+		int dot = fileName.lastIndexOf('.');
+		return fileName.substring(0, dot);
+	}
 
 
 	@SuppressWarnings("static-access")
-	public String convertToJimple(String fileToConvertString) {
-
-		File fileToConvert = new File(fileToConvertString);
-		String fileDirectory = fileToConvert.getParentFile().getAbsolutePath();
-
-		String classFile = "";
-		int dot = fileToConvert.getName().lastIndexOf('.');
-		if (0 < dot && dot <= fileToConvert.getName().length() - 2) {
-			classFile = fileToConvert.getName().substring(0, dot);
+	private String convertToJimple(final IFile fileToConvert) {
+		
+		final ICompilationUnit compilationUnit = JavaCore.createCompilationUnitFrom(fileToConvert);
+		final IPackageFragmentRoot pfr = (IPackageFragmentRoot) compilationUnit.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+		final IPackageFragment pf = (IPackageFragment) compilationUnit.getAncestor(IJavaElement.PACKAGE_FRAGMENT);
+		
+		String fileDirectory = compilationUnit.getJavaProject().getProject().getLocation().toOSString();
+		fileDirectory = fileDirectory.substring(0, fileDirectory.lastIndexOf(File.separator));
+        fileDirectory = fileDirectory + pfr.getPath().toOSString();  
+        
+        String javaFile = "";
+        
+		if (pf.isDefaultPackage()) {
+			javaFile = removeFileExtension(compilationUnit.getElementName());
 		}
-
+		else {
+			javaFile = pf.getElementName()+ '.' + removeFileExtension(compilationUnit.getElementName());
+			throw new RuntimeException("Currently jStar does not support packages");
+		}
+		
 		final String sootOutput = fileDirectory + File.separator + SootOutput;
 		
-		String[] args = {"-cp", fileDirectory + File.pathSeparator + PreferenceConstants.getSootClassPathRt(),
+		final String[] args = {"-cp", fileDirectory + File.pathSeparator + PreferenceConstants.getSootClassPathRt(),
 				"-f", "J", 
 				"-output-dir", sootOutput, 
 				"-src-prec", "java",
 				"-print-tags",
-				classFile};
+				javaFile};
 		
 		soot.G.v().reset();
 		soot.Main.main(args);
 	
-		return sootOutput + File.separator + classFile + ".jimple";
+		return sootOutput + File.separator + javaFile + ".jimple";
 	}
 
 	public Process executeJStar(final IFile selectedFile, final String spec,
 			final String logic, final String abs, final PrintMode printMode) throws IOException {
 		
-		String fileToVerify = selectedFile.getLocation().toString();
-		
 		JStar.getInstance().setSpecFile(spec);
 		JStar.getInstance().setLogicFile(logic);
 		JStar.getInstance().setAbsFile(abs);
 
-		final String jimpleFile = convertToJimple(fileToVerify);
+		final String jimpleFile = convertToJimple(selectedFile);
 
 		ProcessBuilder pb = new ProcessBuilder(PreferenceConstants.getJStarExecutable(), 
 				"-e", printMode.getCmdOption(),

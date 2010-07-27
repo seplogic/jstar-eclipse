@@ -54,6 +54,7 @@ public class ConsoleService {
 
 	public void printToConsole(String lines) {
 		MessageConsole myConsole = findConsole(CONSOLE);
+		myConsole.clearConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
 		out.println(lines);
 		showConsole();
@@ -65,6 +66,7 @@ public class ConsoleService {
 		String line = null;
 
 		MessageConsole myConsole = findConsole(CONSOLE);
+		myConsole.clearConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
 
 		List<VerificationError> errors = new LinkedList<VerificationError>();
@@ -78,7 +80,10 @@ public class ConsoleService {
 		}
 
 		int exitVal = pr.waitFor();
-		System.out.println("Exited with error code " + exitVal);
+		
+		if (exitVal != 0) {
+			out.println("Exited with error code " + exitVal);
+		}
 
 		IMarker[] problems = selectedFile.findMarkers(
 				VerificationError.JSTAR_ERROR_MARKER, 
@@ -214,7 +219,6 @@ public class ConsoleService {
 		return new ErrorPos(0, 0);
 	}
 
-	
 	private class ColourIndexPair {
 		private Colour colour;
 		private int index;
@@ -284,57 +288,6 @@ public class ConsoleService {
 		out.println();
 		return out;
 	}
-	
-	/*private MessageConsoleStream printLine(String line, MessageConsoleStream out) {
-		final String red = (char) 0x1B + "[1;31m";
-		final String green = (char) 0x1B + "[1;32m";
-		final String black = (char) 0x1B + "[0m";
-
-		Map<Integer, Colour> map = new TreeMap<Integer, Colour>();
-
-		while (line.contains(red)) {
-			map.put(line.indexOf(red), Colour.RED);
-			line = line.replaceFirst(Pattern.quote(red), "XXXXXXX"); // need a nicer way..
-		}
-
-		while (line.contains(green)) {
-			map.put(line.indexOf(green), Colour.GREEN);
-			line = line.replaceFirst(Pattern.quote(green), "XXXXXXX");
-		}
-
-		while (line.contains(black)) {
-			map.put(line.indexOf(black), Colour.BLACK);
-			line = line.replaceFirst(Pattern.quote(black), "XXXX");
-		}
-
-		Set<Integer> keysSet = map.keySet();
-		Integer[] keys = new Integer[keysSet.size()];
-		keysSet.toArray(keys);
-
-		if (keys.length == 0) {
-			out.println(line);
-			return out;
-		}
-
-		for (int i = 0; i < keys.length; i++) {
-			if (i == keys.length - 1) {
-				int start = keys[i];
-				out = out.getConsole().newMessageStream();
-				Colour colour = map.get(start);
-				out.setColor(new Color(null, colour.getRGB()));
-				out.println(line.substring(start + colour.getCmdSymbolCount()));
-			} else {
-				int start = keys[i];
-				int end = keys[i + 1];
-				out = out.getConsole().newMessageStream();
-				Colour colour = map.get(start);
-				out.setColor(new Color(null, colour.getRGB()));
-				out.print(line.substring(start + colour.getCmdSymbolCount(), end));
-			}
-		}
-
-		return out;
-	}*/
 
 	private enum Colour {
 		RED(255, 0, 0, 7), GREEN(0, 255, 0, 7), BLACK(0, 0, 0, 4);

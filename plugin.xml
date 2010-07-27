@@ -13,7 +13,7 @@
                enablesFor="1"
                icon="icons/jStar.gif"
                id="com.jstar.eclipse.verification.action"
-               label="Verify"
+               label="Verify with jStar..."
                style="push"
                tooltip="Verify java class">
          </action>
