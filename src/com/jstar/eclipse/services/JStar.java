@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
@@ -97,6 +99,8 @@ public class JStar {
 		JStar.getInstance().setSpecFile(spec);
 		JStar.getInstance().setLogicFile(logic);
 		JStar.getInstance().setAbsFile(abs);
+		
+		checkConfigurations();
 
 		final String jimpleFile = convertToJimple(selectedFile);
 
@@ -109,10 +113,8 @@ public class JStar {
 		
 		Map<String, String> env = pb.environment();
 		
-		String path = env.get("Path");
-		env.put("Path", PreferenceConstants.getCygwinPath()
-				+ File.pathSeparator + PreferenceConstants.getJStarPath()
-				+ File.pathSeparator + path);
+		String path = StringUtils.isEmpty(env.get("Path")) ? "" : File.pathSeparator + env.get("Path");
+		env.put("Path", getCygwinPath() + PreferenceConstants.getJStarPath() + path);
 		
 		env.put(PreferenceConstants.JSTAR_LOGIC_LIBRARY,
 				PreferenceConstants.getJStarLogicLibrary());
@@ -122,6 +124,36 @@ public class JStar {
 				PreferenceConstants.getJStarSpecLibrary());
 
 		return pb.start();
+	}
+	
+	private void checkConfigurations() {
+		if (SystemUtils.IS_OS_WINDOWS && StringUtils.isEmpty(PreferenceConstants.getCygwinPath())) {
+			throw new RuntimeException("Please specify the location of cygwin");
+		}
+		
+		if (StringUtils.isEmpty(PreferenceConstants.getJStarPath())) {
+			throw new RuntimeException("Please specify the location of jStar");
+		}
+		
+		if (StringUtils.isEmpty(PreferenceConstants.getJStarLogicLibrary())) {
+			throw new RuntimeException("Please specify the location of jStar logic library");
+		}
+		
+		if (StringUtils.isEmpty(PreferenceConstants.getJStarSpecLibrary())) {
+			throw new RuntimeException("Please specify the location of jStar specification library");
+		}
+		
+		if (StringUtils.isEmpty(PreferenceConstants.getSootClassPathRt())) {
+			throw new RuntimeException("Please specify the location of rt.jar file in JAVA jre");
+		}
+	}
+
+	private String getCygwinPath() {
+		final String cygwinPath = PreferenceConstants.getCygwinPath();
+		if (StringUtils.isNotEmpty(cygwinPath)) {
+			return cygwinPath + File.pathSeparator;
+		}
+		return "";
 	}
 
 	public void setSpecFile(String specFile) {

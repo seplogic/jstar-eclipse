@@ -74,6 +74,7 @@ public class ConsoleService {
 			if (line.startsWith(JSTAR_LINE_PREFIX)) {
 				errors.add(new VerificationError(new JSONObject(line
 						.substring(5))));
+				System.out.println(line);
 			} else {
 				out = printLine(line, out);
 			}
@@ -192,15 +193,30 @@ public class ConsoleService {
 		}
 
 		try {
-			input = new BufferedReader(new InputStreamReader(javaFile.getContents()));
-			while ((line = input.readLine()) != null) {
+			char character;
+			char nextCharacter = ' ';
+			InputStreamReader inputStreamReader = new InputStreamReader(javaFile.getContents());	
+			
+			character = (char)inputStreamReader.read();
+			while (inputStreamReader.ready()) {
+				
 				if (lineNumber < startLine) {
-					start += line.length() + 2; // "\n" ???
-					end += line.length() + 2;
-				} else if (lineNumber < endLine) {
-					end += line.length() + 2;
+					start += 1;
+					end += 1;
+				} 
+				else if (lineNumber < endLine) {
+					end += 1;
 				}
-				lineNumber++;
+				else {
+					break;
+				}
+				
+				nextCharacter = (char)inputStreamReader.read();
+				if (character == '\n' || (character == '\r' && nextCharacter != '\n') ) {
+					lineNumber++;
+				}
+				
+				character = nextCharacter;
 			}
 
 			start += startSymbol - 1;

@@ -26,6 +26,13 @@ import com.jstar.eclipse.services.JStar;
 import com.jstar.eclipse.services.JStar.PrintMode;
 
 public class InputFileDialog extends Dialog {
+	
+	private final String INPUT_FILES = "input_files";
+	private final String SPECS = "specs";
+	private final String SPEC_EXT = ".spec";
+	private final String LOGIC = "logic";
+	private final String ABS = "abs";
+	
 	private IFile selectedFile;
 	private Text specField;
 	private Text logicField;
@@ -70,10 +77,12 @@ public class InputFileDialog extends Dialog {
 		specField = new Text(component, SWT.BORDER);
 		specField.setLayoutData(gridData);
 		
+		final String fileLocation = new File(selectedFile.getLocation().toString()).getParentFile().getAbsolutePath();
+		
 		Button specButton = new Button(component, SWT.PUSH);
 		specButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				specField.setText(loadFile(getShell(), new File(selectedFile.getLocation().toString()).getParentFile().getAbsolutePath()));
+				specField.setText(loadFile(getShell(), fileLocation));
 			}
 		});
 		specButton.setText("Browse");
@@ -87,7 +96,7 @@ public class InputFileDialog extends Dialog {
 		Button logicButton = new Button(component, SWT.PUSH);
 		logicButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				logicField.setText(loadFile(getShell(), new File(selectedFile.getLocation().toString()).getParentFile().getAbsolutePath()));
+				logicField.setText(loadFile(getShell(), fileLocation));
 			}
 		});
 		logicButton.setText("Browse");
@@ -101,7 +110,7 @@ public class InputFileDialog extends Dialog {
 		Button absButton = new Button(component, SWT.PUSH);
 		absButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				absField.setText(loadFile(getShell(), new File(selectedFile.getLocation().toString()).getParentFile().getAbsolutePath()));
+				absField.setText(loadFile(getShell(), fileLocation));
 			}
 		});
 		absButton.setText("Browse");
@@ -120,14 +129,67 @@ public class InputFileDialog extends Dialog {
 	    verbose = new Button(group1, SWT.RADIO);
 	    verbose.setText("verbose");
 	    quiet.setSelection(true);
-		
-		specField.setText(JStar.getInstance().getSpecFile());
-		logicField.setText(JStar.getInstance().getLogicFile());
-		absField.setText(JStar.getInstance().getAbsFile());
+	    
+	    setDefaultLocations(fileLocation);
 	
 		return parentComponent;
 	}
 	
+	private void setDefaultLocations(final String fileLocation) {
+		setDefaultSpec(fileLocation);
+		setDefaultLogic(fileLocation);
+		setDefaultAbs(fileLocation);
+	}
+	
+	private void setDefaultAbs(String fileLocation) {
+		final File defaultAbsFile = new File(inputFileDirectory(fileLocation) + ABS);
+		
+		if (defaultAbsFile.exists()) {
+			absField.setText(defaultAbsFile.getAbsolutePath());
+			return;
+		}
+		
+		absField.setText(JStar.getInstance().getAbsFile());			
+	}
+
+	private void setDefaultLogic(final String fileLocation) {
+		final File defaultLogicFile = new File(inputFileDirectory(fileLocation) + LOGIC);
+		
+		if (defaultLogicFile.exists()) {
+			logicField.setText(defaultLogicFile.getAbsolutePath());
+			return;
+		}
+		
+		logicField.setText(JStar.getInstance().getLogicFile());	
+	}
+
+	private void setDefaultSpec(final String fileLocation) {
+		final File defaultSpecFileSpecs = new File(inputFileDirectory(fileLocation) + SPECS);
+		
+		if (defaultSpecFileSpecs.exists()) {
+			specField.setText(defaultSpecFileSpecs.getAbsolutePath());
+			return;
+		}
+		
+		final File defaultSpecFileClassSpec = new File(inputFileDirectory(fileLocation) + removeFileExtension(selectedFile.getName()) + SPEC_EXT);
+		
+		if (defaultSpecFileClassSpec.exists()) {
+			specField.setText(defaultSpecFileClassSpec.getAbsolutePath());
+			return;
+		}
+		
+		specField.setText(JStar.getInstance().getSpecFile());
+	}
+	
+	private String removeFileExtension(final String fileName) {
+		int dot = fileName.lastIndexOf('.');
+		return fileName.substring(0, dot);
+	}
+	
+	private String inputFileDirectory(final String fileLocation) {
+		return fileLocation + File.separator + INPUT_FILES + File.separator;
+	}
+
 	private PrintMode getMode() {
 		if (verbose.getSelection()) {
 			return PrintMode.VERBOSE;
