@@ -1,6 +1,7 @@
 package com.jstar.eclipse.dialogs;
 
 import java.io.File;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.Dialog;
@@ -11,8 +12,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
@@ -22,117 +23,202 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import com.jstar.eclipse.Activator;
+import com.jstar.eclipse.services.AnnotationProcessingService;
 import com.jstar.eclipse.services.JStar;
 import com.jstar.eclipse.services.JStar.PrintMode;
 
 public class InputFileDialog extends Dialog {
 	
-	private final String INPUT_FILES = "input_files";
 	private final String SPECS = "specs";
-	private final String SPEC_EXT = ".spec";
 	private final String LOGIC = "logic";
 	private final String ABS = "abs";
 	
 	private IFile selectedFile;
+	private List<File> jimpleFiles;
+	
 	private Text specField;
 	private Text logicField;
 	private Text absField;
+	private Combo jimpleFileField;
 	private String specFieldValue;
 	private String logicFieldValue;
 	private String absFieldValue;
+	private String jimpleFile;
 	private PrintMode printMode;
 	private Button quiet;
 	private Button verbose;
 	
     private Image image = Activator.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons" + File.separator + "jStar_square.gif").createImage();
+	private Button specSource;
+	private Button specSeparate;
+	private Label specLabel;
+	private Button specButton;
+	private boolean separateSpec;
 
 
-	public InputFileDialog(Shell parentShell, IFile selectedFile) {
+	public InputFileDialog(Shell parentShell, IFile selectedFile, List<File> jimpleFiles) {
 		super(parentShell);
 		this.selectedFile = selectedFile;
+		this.jimpleFiles = jimpleFiles;
 	}
 	
 	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite parentComponent = (Composite)super.createDialogArea(parent);
 		Composite component = new Composite(parentComponent, SWT.NONE);
+		component.setLayout(new GridLayout());
 		
-		GridLayout layout = new GridLayout();
-		layout.numColumns = 3;
-		component.setLayout(layout);
-		
-		GridData horizontalSpan3 = new GridData();
-		horizontalSpan3.horizontalSpan = 3;
-		
-		Label selectLabel = new Label(component, SWT.NONE);
-		selectLabel.setText("Select input files:");
-		selectLabel.setLayoutData(horizontalSpan3);
-		
+		addSpecificationGroup(component);
+		addInputFilesGroup(component);
+		addModeGroup(component);
+	    
+	    setDefaultLocations(getSelectedFileLocation());
+	
+		return parentComponent;
+	}
+	
+	private String getSelectedFileLocation() {
+		return new File(selectedFile.getLocation().toString()).getParentFile().getAbsolutePath();
+	}
+	
+	private void addModeGroup(Composite component) {
+	    Group group = new Group(component, SWT.SHADOW_IN);
+	    group.setText("Mode");
+	    GridLayout gridLayout = new GridLayout();
+	    gridLayout.horizontalSpacing = 10;
+	    gridLayout.verticalSpacing = 10;
+	    group.setLayout(gridLayout);
+	    group.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+	    
+	    quiet = new Button(group, SWT.RADIO);
+	    quiet.setText("Run jStar in quiet mode");
+	    quiet.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+	    verbose = new Button(group, SWT.RADIO);
+	    verbose.setText("Run jStar in verbose mode");
+	    verbose.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+	    
+	    quiet.setSelection(true);
+	}
+
+	
+	private void addSpecificationGroup(Composite component) {
+	    Group group = new Group(component, SWT.SHADOW_IN);
+	    group.setText("Specification");
+	    GridLayout gridLayout = new GridLayout();
+	    gridLayout.numColumns = 3;
+	    gridLayout.horizontalSpacing = 10;
+	    gridLayout.verticalSpacing = 10;
+	    group.setLayout(gridLayout);
+	    
+	    specSource = new Button(group, SWT.RADIO);
+	    specSource.setText("Specification is included in the source file");
+	    specSource.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false, 3, 1));
+	    
+	    specSource.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				setEnabledSpecSeparate(false);
+			}
+			
+			public void widgetDefaultSelected(SelectionEvent e) {
+				setEnabledSpecSeparate(false);
+			}
+	    });
+	    
+	    specSeparate = new Button(group, SWT.RADIO);
+	    specSeparate.setText("Specification is in separate file");
+	    specSeparate.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false, 3, 1));
+	    
+	    specSeparate.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				setEnabledSpecSeparate(true);
+			}
+	    });
+	    
 		GridData gridData = new GridData();
 		gridData.widthHint = 400;
 		
-		Label specLabel = new Label(component, SWT.NONE);
-		specLabel.setText("Pre/post condition specification");
+		specLabel = new Label(group, SWT.NONE);
+		specLabel.setText("Specification File:");
 
-		specField = new Text(component, SWT.BORDER);
+		specField = new Text(group, SWT.BORDER);
 		specField.setLayoutData(gridData);
-		
-		final String fileLocation = new File(selectedFile.getLocation().toString()).getParentFile().getAbsolutePath();
-		
-		Button specButton = new Button(component, SWT.PUSH);
+				
+		specButton = new Button(group, SWT.PUSH);
 		specButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				specField.setText(loadFile(getShell(), fileLocation));
+				specField.setText(loadFile(getShell(), getSelectedFileLocation()));
 			}
 		});
 		specButton.setText("Browse");
+	}
+	
+	private void setEnabledSpecSeparate(boolean enabled) {
+		specField.setEnabled(enabled);
+		specLabel.setEnabled(enabled);
+		specButton.setEnabled(enabled);
+	}
+	
+	private void addInputFilesGroup(Composite component) {
+	    Group group = new Group(component, SWT.SHADOW_IN);
+	    group.setText("Input Files");
+	    GridLayout gridLayout = new GridLayout();
+	    gridLayout.numColumns = 3;
+	    gridLayout.horizontalSpacing = 10;
+	    gridLayout.verticalSpacing = 10;
+	    group.setLayout(gridLayout);
+	    
+	    if (jimpleFiles.size() == 1) {	
+			jimpleFile = jimpleFiles.get(0).getAbsolutePath();
+		}
+		else {
+			Label jimpleLabel = new Label(group, SWT.NONE);
+			jimpleLabel.setText("Jimple file");
+			
+			GridData jimpleData = new GridData();
+			jimpleData.horizontalSpan = 2;
+			
+			jimpleFileField = new Combo(group, SWT.READ_ONLY);
+			jimpleFileField.setLayoutData(jimpleData);
+					
+			for (final File file : jimpleFiles) {
+				final String fileName = JStar.getInstance().removeFileExtension(file.getName());
+				jimpleFileField.add(fileName);
+				jimpleFileField.setData(fileName, file.getAbsolutePath());
+			}
+			
+			jimpleFileField.select(0);
+		}
 		
-		Label logicLabel = new Label(component, SWT.NONE);
+		GridData gridData = new GridData();
+		gridData.widthHint = 400;		
+		
+		Label logicLabel = new Label(group, SWT.NONE);
 		logicLabel.setText("Logic rules");
 		
-		logicField = new Text(component, SWT.BORDER);
+		logicField = new Text(group, SWT.BORDER);
 		logicField.setLayoutData(gridData);
 		
-		Button logicButton = new Button(component, SWT.PUSH);
+		Button logicButton = new Button(group, SWT.PUSH);
 		logicButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				logicField.setText(loadFile(getShell(), fileLocation));
+				logicField.setText(loadFile(getShell(), getSelectedFileLocation()));
 			}
 		});
 		logicButton.setText("Browse");
 		
-		Label absLabel = new Label(component, SWT.NONE);
+		Label absLabel = new Label(group, SWT.NONE);
 		absLabel.setText("Abstraction rules");
 		
-		absField = new Text(component, SWT.BORDER);
+		absField = new Text(group, SWT.BORDER);
 		absField.setLayoutData(gridData);
 		
-		Button absButton = new Button(component, SWT.PUSH);
+		Button absButton = new Button(group, SWT.PUSH);
 		absButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				absField.setText(loadFile(getShell(), fileLocation));
+				absField.setText(loadFile(getShell(), getSelectedFileLocation()));
 			}
 		});
 		absButton.setText("Browse");
-		
-		Label separator = new Label(component, SWT.HORIZONTAL | SWT.SEPARATOR);
-		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-		gd.verticalIndent = 10;
-		gd.horizontalSpan = 3;
-		separator.setLayoutData(gd);
-		
-	    Group group1 = new Group(component, SWT.SHADOW_IN);
-	    group1.setText("Select mode:");
-	    group1.setLayout(new RowLayout(SWT.VERTICAL));
-	    quiet = new Button(group1, SWT.RADIO);
-	    quiet.setText("quiet");
-	    verbose = new Button(group1, SWT.RADIO);
-	    verbose.setText("verbose");
-	    quiet.setSelection(true);
-	    
-	    setDefaultLocations(fileLocation);
-	
-		return parentComponent;
 	}
 	
 	private void setDefaultLocations(final String fileLocation) {
@@ -171,7 +257,7 @@ public class InputFileDialog extends Dialog {
 			return;
 		}
 		
-		final File defaultSpecFileClassSpec = new File(inputFileDirectory(fileLocation) + removeFileExtension(selectedFile.getName()) + SPEC_EXT);
+		final File defaultSpecFileClassSpec = new File(inputFileDirectory(fileLocation) + removeFileExtension(selectedFile.getName()) + AnnotationProcessingService.SPEC_EXT);
 		
 		if (defaultSpecFileClassSpec.exists()) {
 			specField.setText(defaultSpecFileClassSpec.getAbsolutePath());
@@ -187,7 +273,7 @@ public class InputFileDialog extends Dialog {
 	}
 	
 	private String inputFileDirectory(final String fileLocation) {
-		return fileLocation + File.separator + INPUT_FILES + File.separator;
+		return fileLocation + File.separator + AnnotationProcessingService.INPUT_FILES + File.separator;
 	}
 
 	private PrintMode getMode() {
@@ -244,7 +330,20 @@ public class InputFileDialog extends Dialog {
 		setSpecFieldValue(specField.getText());
 		setLogicFieldValue(logicField.getText());
 		setAbsFieldValue(absField.getText());
+		
+		if (jimpleFileField != null) {
+			setJimpleFile((String)jimpleFileField.getData(jimpleFileField.getItem(jimpleFileField.getSelectionIndex())));
+		}
+		
 		setPrintMode(getMode());
+		
+		if (specSource.getSelection()) {
+			separateSpec = false;
+		}
+		else {
+			separateSpec = true;
+		}
+		
 		super.okPressed();
 	}
 	
@@ -290,6 +389,18 @@ public class InputFileDialog extends Dialog {
 
 	public PrintMode getPrintMode() {
 		return printMode;
+	}
+
+	public String getJimpleFile() {
+		return jimpleFile;
+	}
+	
+	public void setJimpleFile(String jimpleFile) {
+		this.jimpleFile = jimpleFile;
+	}
+
+	public boolean isSeparateSpec() {
+		return separateSpec;
 	}
 
 }

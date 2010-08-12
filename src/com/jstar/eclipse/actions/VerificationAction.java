@@ -1,6 +1,10 @@
 package com.jstar.eclipse.actions;
 
+import java.io.File;
+import java.util.List;
+
 import com.jstar.eclipse.dialogs.InputFileDialog;
+import com.jstar.eclipse.services.AnnotationProcessingService;
 import com.jstar.eclipse.services.ConsoleService;
 import com.jstar.eclipse.services.JStar;
 
@@ -24,18 +28,42 @@ public class VerificationAction implements IObjectActionDelegate {
 
 	@Override
 	public void run(IAction action) {
+		try {
+			JStar.getInstance().checkConfigurations();
+		}
+		catch (RuntimeException re) {
+			re.printStackTrace();
+			re.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+			return;
+		}
+		
 		final IFile selectedFile = (IFile) ((IStructuredSelection) this.selection).getFirstElement();		
-		final InputFileDialog dialog = new InputFileDialog(workbenchPart.getSite().getShell(), selectedFile);
+		
+		final List<File> jimpleFiles = JStar.getInstance().convertToJimple(selectedFile);
+				
+		final InputFileDialog dialog = new InputFileDialog(workbenchPart.getSite().getShell(), selectedFile, jimpleFiles);
+		
 		dialog.setBlockOnOpen(true);
         final int returnValue = dialog.open();
         
         if (returnValue == IDialogConstants.OK_ID) {
+        	
+        	String spec;
+        	
+        	if (dialog.isSeparateSpec()) {
+        		spec = dialog.getSpecFieldValue();
+        	}
+        	else {       		
+        		spec = AnnotationProcessingService.getInstance().processAnnotations(selectedFile).getAbsolutePath();
+        	}
+        	
 			try {
 				Process pr = JStar.getInstance().executeJStar(
 						selectedFile,
-						dialog.getSpecFieldValue(), 
+						spec, 
 						dialog.getLogicFieldValue(),
 						dialog.getAbsFieldValue(),
+						dialog.getJimpleFile(),
 						dialog.getPrintMode());
 				ConsoleService.getInstance().printToConsole(selectedFile, pr);
 			} 

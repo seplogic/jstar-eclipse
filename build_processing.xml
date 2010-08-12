@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<project name="apt" default="jar" basedir=".">
+    <property name="build" value="build_processing"/>
+    <property name="jar_files" value="jar files/processing"/>
+    <property name="annotations" value="jar files/annotations"/>
+    
+    <path id="classpath">
+        <fileset dir="${annotations}" includes="**/*.jar"/>
+    </path>
+    
+    <target name="clean">
+		<delete dir="${build}"/>
+		<delete dir="${jar_files}"/>
+	</target>
+	
+	<target name="init" depends="clean">
+		<mkdir dir="${build}"/>
+		<mkdir dir="${jar_files}"/>
+	</target>
+  
+    <target name="compile" depends="init">
+        <javac srcdir="src/com/jstar/eclipse/processing" destdir="${build}" classpathref="classpath"/>
+    </target>
+  
+  <target name="jar" depends="compile">
+        <jar basedir="${build}" destfile="${jar_files}/jstar_processing.jar"/>
+  </target>
+</project>

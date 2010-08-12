@@ -3,6 +3,7 @@ package com.jstar.eclipse.services;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -15,6 +16,8 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 
 import com.jstar.eclipse.preferences.PreferenceConstants;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 
 public class JStar {
 
@@ -51,14 +54,15 @@ public class JStar {
 		}		
 	}
 	
-	private String removeFileExtension(final String fileName) {
+	public String removeFileExtension(final String fileName) {
 		int dot = fileName.lastIndexOf('.');
 		return fileName.substring(0, dot);
 	}
 
 
-	@SuppressWarnings("static-access")
-	private String convertToJimple(final IFile fileToConvert) {
+	@SuppressWarnings({ "static-access", "unchecked" })
+	// in io 2.0 FileUtils.listFiles should return Collection<File> instead of Collection
+	public List<File> convertToJimple(final IFile fileToConvert) {
 		
 		final ICompilationUnit compilationUnit = JavaCore.createCompilationUnitFrom(fileToConvert);
 		final IPackageFragmentRoot pfr = (IPackageFragmentRoot) compilationUnit.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
@@ -78,9 +82,11 @@ public class JStar {
 			throw new RuntimeException("Currently jStar does not support packages");
 		}
 		
-		final String sootOutput = fileDirectory + File.separator + SootOutput;
+		final String sootOutput = fileDirectory + File.separator + SootOutput + File.separator + javaFile;
 		
-		final String[] args = {"-cp", fileDirectory + File.pathSeparator + PreferenceConstants.getSootClassPathRt(),
+		final String[] args = {
+				"-cp", fileDirectory + File.pathSeparator + PreferenceConstants.getSootClassPathRt() + 
+									   File.pathSeparator + PreferenceConstants.getAnnotationsPath(),
 				"-f", "J", 
 				"-output-dir", sootOutput, 
 				"-src-prec", "java",
@@ -89,20 +95,24 @@ public class JStar {
 		
 		soot.G.v().reset();
 		soot.Main.main(args);
-	
-		return sootOutput + File.separator + javaFile + ".jimple";
+		
+		final File directory = new File(sootOutput);
+		
+		final List<File> jimpleFiles = (List<File>) FileUtils.listFiles(directory, new WildcardFileFilter("*.jimple"), null);
+		
+		if (jimpleFiles == null || jimpleFiles.size() == 0) {
+			throw new RuntimeException("An error occurred while converting to java file to jimple format");
+		}
+		
+		return jimpleFiles;
 	}
 
 	public Process executeJStar(final IFile selectedFile, final String spec,
-			final String logic, final String abs, final PrintMode printMode) throws IOException {
+			final String logic, final String abs, final String jimpleFile, final PrintMode printMode) throws IOException {
 		
 		JStar.getInstance().setSpecFile(spec);
 		JStar.getInstance().setLogicFile(logic);
 		JStar.getInstance().setAbsFile(abs);
-		
-		checkConfigurations();
-
-		final String jimpleFile = convertToJimple(selectedFile);
 
 		ProcessBuilder pb = new ProcessBuilder(PreferenceConstants.getJStarExecutable(), 
 				"-e", printMode.getCmdOption(),
@@ -126,7 +136,7 @@ public class JStar {
 		return pb.start();
 	}
 	
-	private void checkConfigurations() {
+	public void checkConfigurations() {
 		if (SystemUtils.IS_OS_WINDOWS && StringUtils.isEmpty(PreferenceConstants.getCygwinPath())) {
 			throw new RuntimeException("Please specify the location of cygwin");
 		}
@@ -145,6 +155,14 @@ public class JStar {
 		
 		if (StringUtils.isEmpty(PreferenceConstants.getSootClassPathRt())) {
 			throw new RuntimeException("Please specify the location of rt.jar file in JAVA jre");
+		}
+		
+		if (StringUtils.isEmpty(PreferenceConstants.getAnnotationsPath())) {
+			throw new RuntimeException("Please specify the location of annotations.jar file");
+		}
+		
+		if (StringUtils.isEmpty(PreferenceConstants.getAnnotationProcessorPath())) {
+			throw new RuntimeException("Please specify the location of jstar_processing.jar file");
 		}
 	}
 

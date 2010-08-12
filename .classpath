@@ -7,5 +7,7 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/json.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-1.4/commons-io-1.4.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files (x86)/Java/jdk1.6.0_20/lib/tools.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

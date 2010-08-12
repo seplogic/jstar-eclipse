@@ -18,10 +18,12 @@ public class Configuration
 	
 
 	public void createFieldEditors() {
+		addField(new DirectoryFieldEditor(PreferenceConstants.JSTAR_PATH, "&jStar executable:", getFieldEditorParent()));
+		addField(new FileFieldEditor(PreferenceConstants.SPEC_ANNOTATIONS_PREFERENCE, "Annotation library location:", getFieldEditorParent()));
+		addField(new FileFieldEditor(PreferenceConstants.ANNOTATION_PROCESSOR_PREFERENCE, "Annotation processor location:", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.JSTAR_LOGIC_LIBRARY_PREFERENCE, "&jStar Logic Library:", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.JSTAR_ABS_LIBRARY_PREFERENCE, "&jStar Abs Library:", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.JSTAR_SPECS_LIBRARY_PREFERENCE, "&jStar Specs Library:", getFieldEditorParent()));
-		addField(new DirectoryFieldEditor(PreferenceConstants.JSTAR_PATH, "&jStar executable:", getFieldEditorParent()));
 		
 		if (SystemUtils.IS_OS_WINDOWS) {
 			addField(new DirectoryFieldEditor(PreferenceConstants.CYGWIN_PATH, "&cygwin path:", getFieldEditorParent()));

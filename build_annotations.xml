@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<project name="annotations" default="jar" basedir=".">
+    <property name="build" value="build_annotations"/>
+     <property name="jar_files" value="jar files/annotations"/>
+    
+    <target name="clean">
+		<delete dir="${build}"/>
+		<delete dir="${jar_files}"/>
+	</target>
+	
+	<target name="init" depends="clean">
+		<mkdir dir="${build}"/>
+		<mkdir dir="${jar_files}"/>
+	</target>
+  
+    <target name="compile" depends="init">
+        <javac srcdir="src/com/jstar/eclipse/annotations" destdir="${build}"/>
+    </target>
+  
+  <target name="jar" depends="compile">
+        <jar basedir="${build}" destfile="${jar_files}/annotations.jar"/>
+  </target>
+</project>
