@@ -3,6 +3,7 @@ package com.jstar.eclipse.dialogs;
 import java.io.File;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -23,6 +24,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import com.jstar.eclipse.Activator;
+import com.jstar.eclipse.objects.IFilePersistentProperties;
 import com.jstar.eclipse.services.AnnotationProcessingService;
 import com.jstar.eclipse.services.JStar;
 import com.jstar.eclipse.services.JStar.PrintMode;
@@ -96,8 +98,8 @@ public class InputFileDialog extends Dialog {
 	    verbose = new Button(group, SWT.RADIO);
 	    verbose.setText("Run jStar in verbose mode");
 	    verbose.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-	    
-	    quiet.setSelection(true);
+
+	    setMode(IFilePersistentProperties.getMode(selectedFile));
 	}
 
 	
@@ -132,6 +134,10 @@ public class InputFileDialog extends Dialog {
 			public void widgetSelected(SelectionEvent e) {
 				setEnabledSpecSeparate(true);
 			}
+			
+			public void widgetDefaultSelected(SelectionEvent e) {
+				setEnabledSpecSeparate(true);
+			}
 	    });
 	    
 		GridData gridData = new GridData();
@@ -150,6 +156,15 @@ public class InputFileDialog extends Dialog {
 			}
 		});
 		specButton.setText("Browse");
+		
+	    if (IFilePersistentProperties.isSpecInSourceFile(selectedFile)) {
+	    	specSource.setSelection(true);
+	    	setEnabledSpecSeparate(false);
+	    }
+	    else {
+	    	specSeparate.setSelection(true);
+	    	setEnabledSpecSeparate(true);
+	    }
 	}
 	
 	private void setEnabledSpecSeparate(boolean enabled) {
@@ -228,43 +243,61 @@ public class InputFileDialog extends Dialog {
 	}
 	
 	private void setDefaultAbs(String fileLocation) {
-		final File defaultAbsFile = new File(inputFileDirectory(fileLocation) + ABS);
-		
-		if (defaultAbsFile.exists()) {
-			absField.setText(defaultAbsFile.getAbsolutePath());
+		final String absFile = IFilePersistentProperties.getAbsFile(selectedFile);
+		if (StringUtils.isEmpty(absFile)) {
+			final File defaultAbsFile = new File(inputFileDirectory(fileLocation) + ABS);
+			
+			if (defaultAbsFile.exists()) {
+				absField.setText(defaultAbsFile.getAbsolutePath());
+				return;
+			}
+			
+			absField.setText(JStar.getInstance().getAbsFile());
 			return;
 		}
 		
-		absField.setText(JStar.getInstance().getAbsFile());			
+		absField.setText(absFile);
 	}
 
 	private void setDefaultLogic(final String fileLocation) {
-		final File defaultLogicFile = new File(inputFileDirectory(fileLocation) + LOGIC);
-		
-		if (defaultLogicFile.exists()) {
-			logicField.setText(defaultLogicFile.getAbsolutePath());
+		final String logicFile = IFilePersistentProperties.getLogicFile(selectedFile);
+		if (StringUtils.isEmpty(logicFile)) {
+			final File defaultLogicFile = new File(inputFileDirectory(fileLocation) + LOGIC);
+			
+			if (defaultLogicFile.exists()) {
+				logicField.setText(defaultLogicFile.getAbsolutePath());
+				return;
+			}
+			
+			logicField.setText(JStar.getInstance().getLogicFile());	
 			return;
 		}
 		
-		logicField.setText(JStar.getInstance().getLogicFile());	
+		logicField.setText(logicFile);
 	}
 
 	private void setDefaultSpec(final String fileLocation) {
-		final File defaultSpecFileSpecs = new File(inputFileDirectory(fileLocation) + SPECS);
-		
-		if (defaultSpecFileSpecs.exists()) {
-			specField.setText(defaultSpecFileSpecs.getAbsolutePath());
+		final String specFile = IFilePersistentProperties.getSpecFile(selectedFile);
+		if (StringUtils.isEmpty(specFile)) {	
+			final File defaultSpecFileSpecs = new File(inputFileDirectory(fileLocation) + SPECS);
+			
+			if (defaultSpecFileSpecs.exists()) {
+				specField.setText(defaultSpecFileSpecs.getAbsolutePath());
+				return;
+			}
+			
+			final File defaultSpecFileClassSpec = new File(inputFileDirectory(fileLocation) + removeFileExtension(selectedFile.getName()) + AnnotationProcessingService.SPEC_EXT);
+			
+			if (defaultSpecFileClassSpec.exists()) {
+				specField.setText(defaultSpecFileClassSpec.getAbsolutePath());
+				return;
+			}
+			
+			specField.setText(JStar.getInstance().getSpecFile());
 			return;
 		}
 		
-		final File defaultSpecFileClassSpec = new File(inputFileDirectory(fileLocation) + removeFileExtension(selectedFile.getName()) + AnnotationProcessingService.SPEC_EXT);
-		
-		if (defaultSpecFileClassSpec.exists()) {
-			specField.setText(defaultSpecFileClassSpec.getAbsolutePath());
-			return;
-		}
-		
-		specField.setText(JStar.getInstance().getSpecFile());
+		specField.setText(specFile);
 	}
 	
 	private String removeFileExtension(final String fileName) {
@@ -282,6 +315,15 @@ public class InputFileDialog extends Dialog {
 		}
 	
 		return PrintMode.QUIET;
+	}
+	
+	private void setMode(PrintMode mode) {
+	    if (mode.equals(PrintMode.QUIET)) {
+			quiet.setSelection(true);
+		}
+		else {
+			verbose.setSelection(true);
+		}
 	}
 	
     private String loadFile (Shell shell, String path) {
@@ -328,14 +370,20 @@ public class InputFileDialog extends Dialog {
 	@Override
 	protected void okPressed() {
 		setSpecFieldValue(specField.getText());
+		IFilePersistentProperties.setSpecFile(selectedFile, specField.getText());
 		setLogicFieldValue(logicField.getText());
+		IFilePersistentProperties.setLogicFile(selectedFile, logicField.getText());
 		setAbsFieldValue(absField.getText());
+		IFilePersistentProperties.setAbsFile(selectedFile, absField.getText());
 		
 		if (jimpleFileField != null) {
 			setJimpleFile((String)jimpleFileField.getData(jimpleFileField.getItem(jimpleFileField.getSelectionIndex())));
 		}
 		
-		setPrintMode(getMode());
+		final PrintMode mode = getMode();
+		setPrintMode(mode);
+		IFilePersistentProperties.setMode(selectedFile, mode);
+
 		
 		if (specSource.getSelection()) {
 			separateSpec = false;
@@ -343,6 +391,8 @@ public class InputFileDialog extends Dialog {
 		else {
 			separateSpec = true;
 		}
+		
+		IFilePersistentProperties.setSpecInSourceFile(selectedFile, !separateSpec);
 		
 		super.okPressed();
 	}
