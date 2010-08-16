@@ -9,13 +9,31 @@
             nameFilter="*.java"
             objectClass="org.eclipse.core.resources.IFile">
          <action
-               class="com.jstar.eclipse.actions.VerificationAction"
+               class="com.jstar.eclipse.actions.ContextMenuVerificationConfigAction"
                enablesFor="1"
-               icon="icons/jStar.gif"
-               id="com.jstar.eclipse.verification.action"
-               label="Verify with jStar..."
+               id="com.jstar.eclipse.verification.configuration.action"
+               label="Verify Configurations..."
+               menubarPath="com.jstar.eclipse.context.menu/com.jstar.eclipse.separator1"
                style="push"
-               tooltip="Verify java class">
+               tooltip="Verify java source">
+         </action>
+         <menu
+               icon="icons/jStar.gif"
+               id="com.jstar.eclipse.context.menu"
+               label="jStar Verification"
+               path="additions">
+            <separator
+                  name="com.jstar.eclipse.separator1">
+            </separator>
+         </menu>
+         <action
+               class="com.jstar.eclipse.actions.ContextMenuVerificationAction"
+               enablesFor="1"
+               id="com.jstar.eclipse.verification.action"
+               label="Verify"
+               menubarPath="com.jstar.eclipse.context.menu/com.jstar.eclipse.separator1"
+               style="push"
+               tooltip="Verify java source">
          </action>
       </objectContribution>
    </extension>
@@ -46,6 +64,22 @@
       <initializer
             class="com.jstar.eclipse.preferences.PreferenceInitializer">
       </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            id="com.jstar.eclipse.jstar.verification.action"
+            label="jStar Verification"
+            visible="true">
+         <action
+               class="com.jstar.eclipse.actions.ToolbarVerificationAction"
+               icon="icons/jStar.gif"
+               id="com.jstar.eclipse.verification.action.from.toolbar"
+               label="jStar Verification"
+               style="pulldown"
+               toolbarPath="Normal/additions">
+         </action>
+      </actionSet>
    </extension>
 
 </plugin>

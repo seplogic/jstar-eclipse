@@ -45,10 +45,18 @@ public class AnnotationProcessingService {
 		int exitValue = javac.run(null, null, null, arguments);
 		
 		if (exitValue != 0) {
+			ConsoleService.getInstance().printToConsole("An error occurred while processing annotations.");
 			throw new RuntimeException("An error occurred while processing annotations");
 		}
+		
+		final File specFile = new File(generated + File.separator + removeFileExtension(selectedFile.getName().toString()) + SPEC_EXT);
+		
+		if (!specFile.exists()) {
+			ConsoleService.getInstance().printToConsole("Any annotations could be found in the source file.");
+			throw new RuntimeException("Any annotations could be found in the source file.");
+		}
 
-		return new File(generated + File.separator + removeFileExtension(selectedFile.getName().toString()) + SPEC_EXT);
+		return specFile;
 	}
 	
 	private String makeGeneratedDir(IFile selectedFile) {

@@ -90,6 +90,7 @@ public class JStar {
 				"-f", "J", 
 				"-output-dir", sootOutput, 
 				"-src-prec", "java",
+				"-v",
 				"-print-tags",
 				javaFile};
 		
