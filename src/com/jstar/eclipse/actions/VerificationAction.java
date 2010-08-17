@@ -5,12 +5,14 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Shell;
 
 import com.jstar.eclipse.dialogs.InputFileDialog;
-import com.jstar.eclipse.dialogs.JimpleFileDialog;
 import com.jstar.eclipse.objects.IFilePersistentProperties;
+import com.jstar.eclipse.objects.VerificationError;
 import com.jstar.eclipse.services.AnnotationProcessingService;
 import com.jstar.eclipse.services.ConsoleService;
 import com.jstar.eclipse.services.JStar;
@@ -29,13 +31,13 @@ public class VerificationAction {
 
 		final List<File> jimpleFiles = JStar.getInstance().convertToJimple(selectedFile);
 
-		final InputFileDialog dialog = new InputFileDialog(shell, selectedFile, jimpleFiles);
+		final InputFileDialog dialog = new InputFileDialog(shell, selectedFile);
 
 		dialog.setBlockOnOpen(true);
 		final int returnValue = dialog.open();
 
 		if (returnValue == IDialogConstants.OK_ID) {
-			executeJStar(selectedFile, !dialog.isSeparateSpec(), dialog.getSpecFieldValue(), dialog.getLogicFieldValue(), dialog.getAbsFieldValue(), dialog.getJimpleFile(), dialog.getPrintMode());
+			executeJStar(selectedFile, !dialog.isSeparateSpec(), dialog.getSpecFieldValue(), dialog.getLogicFieldValue(), dialog.getAbsFieldValue(), jimpleFiles, dialog.getPrintMode());
 		}
 	}
 	
@@ -52,29 +54,10 @@ public class VerificationAction {
 			return;
 		}
 		
-		String jimpleFile;
-		if (jimpleFiles.size() == 1) {
-			jimpleFile = jimpleFiles.get(0).getAbsolutePath();
-		}
-		else {
-			final JimpleFileDialog dialog = new JimpleFileDialog(shell, jimpleFiles);
-
-			dialog.setBlockOnOpen(true);
-			
-			final int returnValue = dialog.open();
-
-			if (returnValue == IDialogConstants.OK_ID) {
-				jimpleFile = dialog.getJimpleFile();	
-			}
-			else {
-				return;
-			}
-		}
-		
-		executeJStar(selectedFile, isSpecInSource, specFile, logicFile, absFile, jimpleFile, mode);
+		executeJStar(selectedFile, isSpecInSource, specFile, logicFile, absFile, jimpleFiles, mode);
 	}
 	
-	private void executeJStar(IFile selectedFile, boolean isSpecInSource, String specFile, String logicFile, String absFile, String jimpleFile, PrintMode mode) {
+	private void executeJStar(IFile selectedFile, boolean isSpecInSource, String specFile, String logicFile, String absFile, List<File> jimpleFiles, PrintMode mode) {
 		String spec;
 		if (isSpecInSource) {
 			spec = AnnotationProcessingService.getInstance().processAnnotations(selectedFile).getAbsolutePath();
@@ -82,8 +65,16 @@ public class VerificationAction {
 			spec = specFile;
 		}
 		try {
-			Process pr = JStar.getInstance().executeJStar(selectedFile, spec, logicFile, absFile, jimpleFile, mode);
-			ConsoleService.getInstance().printToConsole(selectedFile, pr);
+			ConsoleService.getInstance().clearConsole();
+			
+			ConsoleService.getInstance().clearMarkers(selectedFile);
+			
+			for (File jimpleFile : jimpleFiles) {
+				Process pr = JStar.getInstance().executeJStar(selectedFile, spec, logicFile, absFile, jimpleFile.getAbsolutePath(), mode);			
+				ConsoleService.getInstance().printToConsole(selectedFile, pr);
+			}
+			
+			ConsoleService.getInstance().printToConsole("jStar Verification is completed.");
 		} catch (Exception exc) {
 			exc.printStackTrace();
 			exc.printStackTrace(ConsoleService.getInstance().getConsoleStream());

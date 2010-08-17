@@ -1,7 +1,6 @@
 package com.jstar.eclipse.dialogs;
 
 import java.io.File;
-import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
@@ -36,7 +35,6 @@ public class InputFileDialog extends Dialog {
 	private final String ABS = "abs";
 	
 	private IFile selectedFile;
-	private List<File> jimpleFiles;
 	
 	private Text specField;
 	private Text logicField;
@@ -58,10 +56,9 @@ public class InputFileDialog extends Dialog {
 	private boolean separateSpec;
 
 
-	public InputFileDialog(Shell parentShell, IFile selectedFile, List<File> jimpleFiles) {
+	public InputFileDialog(Shell parentShell, IFile selectedFile) {
 		super(parentShell);
 		this.selectedFile = selectedFile;
-		this.jimpleFiles = jimpleFiles;
 	}
 	
 	@Override
@@ -181,28 +178,6 @@ public class InputFileDialog extends Dialog {
 	    gridLayout.horizontalSpacing = 10;
 	    gridLayout.verticalSpacing = 10;
 	    group.setLayout(gridLayout);
-	    
-	    if (jimpleFiles.size() == 1) {	
-			jimpleFile = jimpleFiles.get(0).getAbsolutePath();
-		}
-		else {
-			Label jimpleLabel = new Label(group, SWT.NONE);
-			jimpleLabel.setText("Jimple file");
-			
-			GridData jimpleData = new GridData();
-			jimpleData.horizontalSpan = 2;
-			
-			jimpleFileField = new Combo(group, SWT.READ_ONLY);
-			jimpleFileField.setLayoutData(jimpleData);
-					
-			for (final File file : jimpleFiles) {
-				final String fileName = JStar.getInstance().removeFileExtension(file.getName());
-				jimpleFileField.add(fileName);
-				jimpleFileField.setData(fileName, file.getAbsolutePath());
-			}
-			
-			jimpleFileField.select(0);
-		}
 		
 		GridData gridData = new GridData();
 		gridData.widthHint = 400;		

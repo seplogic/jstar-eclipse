@@ -54,10 +54,26 @@ public class ConsoleService {
 
 	public void printToConsole(String lines) {
 		MessageConsole myConsole = findConsole(CONSOLE);
-		myConsole.clearConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
 		out.println(lines);
 		showConsole();
+	}
+	
+	public void clearConsole() {
+		MessageConsole myConsole = findConsole(CONSOLE);
+		myConsole.clearConsole();
+	}
+	
+	public void clearMarkers(IFile selectedFile) throws CoreException {
+		IMarker[] problems = selectedFile.findMarkers(
+				VerificationError.JSTAR_ERROR_MARKER, 
+				true,
+				IResource.DEPTH_INFINITE
+		);
+		
+		for (IMarker problem : problems) {
+			problem.delete();
+		}
 	}
 	
 	public void printToConsole(IFile selectedFile, Process pr) throws IOException, JSONException, InterruptedException, CoreException {
@@ -66,7 +82,6 @@ public class ConsoleService {
 		String line = null;
 
 		MessageConsole myConsole = findConsole(CONSOLE);
-		myConsole.clearConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
 
 		List<VerificationError> errors = new LinkedList<VerificationError>();
@@ -84,16 +99,6 @@ public class ConsoleService {
 		
 		if (exitVal != 0) {
 			out.println("Exited with error code " + exitVal);
-		}
-
-		IMarker[] problems = selectedFile.findMarkers(
-				VerificationError.JSTAR_ERROR_MARKER, 
-				true,
-				IResource.DEPTH_INFINITE
-		);
-		
-		for (IMarker problem : problems) {
-			problem.delete();
 		}
 
 		for (VerificationError error : errors) {

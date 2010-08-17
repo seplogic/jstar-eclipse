@@ -3,6 +3,7 @@ package com.jstar.eclipse.services;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +14,9 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 
 import com.jstar.eclipse.preferences.PreferenceConstants;
 import org.apache.commons.io.FileUtils;
@@ -60,7 +63,7 @@ public class JStar {
 	}
 
 
-	@SuppressWarnings({ "static-access", "unchecked" })
+	@SuppressWarnings("static-access")
 	// in io 2.0 FileUtils.listFiles should return Collection<File> instead of Collection
 	public List<File> convertToJimple(final IFile fileToConvert) {
 		
@@ -99,8 +102,23 @@ public class JStar {
 		
 		final File directory = new File(sootOutput);
 		
-		final List<File> jimpleFiles = (List<File>) FileUtils.listFiles(directory, new WildcardFileFilter("*.jimple"), null);
+		List<String> types = new LinkedList<String>();
+		try {
+			for (IType type : compilationUnit.getAllTypes()) {
+				types.add(type.getElementName());
+			}
+		} catch (JavaModelException e) {
+			throw new RuntimeException("An error occurred while getting all types.");
+		}
 		
+		final List<File> jimpleFiles = new LinkedList<File>();
+		for (Object file : (FileUtils.listFiles(directory, new WildcardFileFilter("*.jimple"), null))) {
+			//TODO : packages
+			if (types.indexOf(removeFileExtension(((File)file).getName())) != -1) {
+				jimpleFiles.add((File)file);
+			}
+		}
+				
 		if (jimpleFiles == null || jimpleFiles.size() == 0) {
 			throw new RuntimeException("An error occurred while converting to java file to jimple format");
 		}
