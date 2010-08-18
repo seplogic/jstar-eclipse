@@ -28,10 +28,6 @@ public class JStar {
 	private static JStar instance;
 	
 	private static final String SootOutput = "sootOutput";
-	
-	private String specFile = "";
-	private String logicFile = "";
-	private String absFile = "";
 
 	private JStar() {
 	}
@@ -132,10 +128,6 @@ public class JStar {
 
 	public Process executeJStar(final IFile selectedFile, final String spec,
 			final String logic, final String abs, final String jimpleFile, final PrintMode printMode) throws IOException {
-		
-		JStar.getInstance().setSpecFile(spec);
-		JStar.getInstance().setLogicFile(logic);
-		JStar.getInstance().setAbsFile(abs);
 
 		ProcessBuilder pb = new ProcessBuilder(PreferenceConstants.getJStarExecutable(), 
 				"-e", printMode.getCmdOption(),
@@ -199,30 +191,6 @@ public class JStar {
 			return cygwinPath + File.pathSeparator;
 		}
 		return "";
-	}
-
-	public void setSpecFile(String specFile) {
-		JStar.getInstance().specFile = specFile;
-	}
-
-	public String getSpecFile() {
-		return specFile;
-	}
-
-	public void setLogicFile(String logicFile) {
-		JStar.getInstance().logicFile = logicFile;
-	}
-
-	public String getLogicFile() {
-		return logicFile;
-	}
-
-	public void setAbsFile(String absFile) {
-		JStar.getInstance().absFile = absFile;
-	}
-
-	public String getAbsFile() {
-		return absFile;
 	}
 
 }

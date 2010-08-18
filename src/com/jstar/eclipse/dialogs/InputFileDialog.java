@@ -25,7 +25,6 @@ import org.eclipse.swt.widgets.Text;
 import com.jstar.eclipse.Activator;
 import com.jstar.eclipse.objects.IFilePersistentProperties;
 import com.jstar.eclipse.services.AnnotationProcessingService;
-import com.jstar.eclipse.services.JStar;
 import com.jstar.eclipse.services.JStar.PrintMode;
 
 public class InputFileDialog extends Dialog {
@@ -149,7 +148,7 @@ public class InputFileDialog extends Dialog {
 		specButton = new Button(group, SWT.PUSH);
 		specButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				specField.setText(loadFile(getShell(), getSelectedFileLocation()));
+				specField.setText(loadFile(getShell(), specField.getText()));
 			}
 		});
 		specButton.setText("Browse");
@@ -191,7 +190,7 @@ public class InputFileDialog extends Dialog {
 		Button logicButton = new Button(group, SWT.PUSH);
 		logicButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				logicField.setText(loadFile(getShell(), getSelectedFileLocation()));
+				logicField.setText(loadFile(getShell(), logicField.getText()));
 			}
 		});
 		logicButton.setText("Browse");
@@ -205,7 +204,7 @@ public class InputFileDialog extends Dialog {
 		Button absButton = new Button(group, SWT.PUSH);
 		absButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				absField.setText(loadFile(getShell(), getSelectedFileLocation()));
+				absField.setText(loadFile(getShell(), absField.getText()));
 			}
 		});
 		absButton.setText("Browse");
@@ -219,6 +218,7 @@ public class InputFileDialog extends Dialog {
 	
 	private void setDefaultAbs(String fileLocation) {
 		final String absFile = IFilePersistentProperties.getAbsFile(selectedFile);
+		
 		if (StringUtils.isEmpty(absFile)) {
 			final File defaultAbsFile = new File(inputFileDirectory(fileLocation) + ABS);
 			
@@ -226,9 +226,6 @@ public class InputFileDialog extends Dialog {
 				absField.setText(defaultAbsFile.getAbsolutePath());
 				return;
 			}
-			
-			absField.setText(JStar.getInstance().getAbsFile());
-			return;
 		}
 		
 		absField.setText(absFile);
@@ -236,6 +233,7 @@ public class InputFileDialog extends Dialog {
 
 	private void setDefaultLogic(final String fileLocation) {
 		final String logicFile = IFilePersistentProperties.getLogicFile(selectedFile);
+		
 		if (StringUtils.isEmpty(logicFile)) {
 			final File defaultLogicFile = new File(inputFileDirectory(fileLocation) + LOGIC);
 			
@@ -243,9 +241,6 @@ public class InputFileDialog extends Dialog {
 				logicField.setText(defaultLogicFile.getAbsolutePath());
 				return;
 			}
-			
-			logicField.setText(JStar.getInstance().getLogicFile());	
-			return;
 		}
 		
 		logicField.setText(logicFile);
@@ -253,6 +248,7 @@ public class InputFileDialog extends Dialog {
 
 	private void setDefaultSpec(final String fileLocation) {
 		final String specFile = IFilePersistentProperties.getSpecFile(selectedFile);
+		
 		if (StringUtils.isEmpty(specFile)) {	
 			final File defaultSpecFileSpecs = new File(inputFileDirectory(fileLocation) + SPECS);
 			
@@ -267,9 +263,6 @@ public class InputFileDialog extends Dialog {
 				specField.setText(defaultSpecFileClassSpec.getAbsolutePath());
 				return;
 			}
-			
-			specField.setText(JStar.getInstance().getSpecFile());
-			return;
 		}
 		
 		specField.setText(specFile);
@@ -301,10 +294,24 @@ public class InputFileDialog extends Dialog {
 		}
 	}
 	
-    private String loadFile (Shell shell, String path) {
-        FileDialog fd = new FileDialog(shell, SWT.OPEN);
-        fd.setText("Open");
-        fd.setFilterPath(path);
+    private String loadFile (final Shell shell, final String path) {
+        final FileDialog fd = new FileDialog(shell, SWT.OPEN);
+        fd.setText("Open");      
+        String filterPath = null;
+        
+        if (path != null) {
+	        final File file = new File(path);
+	                
+	        if (file.isDirectory()) {
+	        	filterPath = file.getAbsolutePath();
+	        }
+	        else {
+	        	filterPath = file.getParent();
+	        }  
+        }
+        
+        fd.setFilterPath(filterPath);
+        
         return fd.open();
     }
 	
