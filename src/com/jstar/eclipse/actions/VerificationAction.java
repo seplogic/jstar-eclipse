@@ -1,18 +1,19 @@
 package com.jstar.eclipse.actions;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Shell;
+import org.json.JSONException;
 
 import com.jstar.eclipse.dialogs.InputFileDialog;
+import com.jstar.eclipse.exceptions.ConfigurationException;
 import com.jstar.eclipse.objects.IFilePersistentProperties;
-import com.jstar.eclipse.objects.VerificationError;
 import com.jstar.eclipse.services.AnnotationProcessingService;
 import com.jstar.eclipse.services.ConsoleService;
 import com.jstar.eclipse.services.JStar;
@@ -21,27 +22,32 @@ import com.jstar.eclipse.services.JStar.PrintMode;
 public class VerificationAction {
 
 	protected void verifyConfig(IFile selectedFile, Shell shell) {
-		try {
-			JStar.getInstance().checkConfigurations();
-		} catch (RuntimeException re) {
-			re.printStackTrace();
-			re.printStackTrace(ConsoleService.getInstance().getConsoleStream());
-			return;
-		}
-
-		final List<File> jimpleFiles = JStar.getInstance().convertToJimple(selectedFile);
+		checkConfigurations();
 
 		final InputFileDialog dialog = new InputFileDialog(shell, selectedFile);
 
 		dialog.setBlockOnOpen(true);
 		final int returnValue = dialog.open();
+		
+		final List<File> jimpleFiles = JStar.getInstance().convertToJimple(selectedFile);
 
 		if (returnValue == IDialogConstants.OK_ID) {
 			executeJStar(selectedFile, !dialog.isSeparateSpec(), dialog.getSpecFieldValue(), dialog.getLogicFieldValue(), dialog.getAbsFieldValue(), jimpleFiles, dialog.getPrintMode());
 		}
 	}
 	
-	protected void verify(IFile selectedFile, Shell shell) {	
+	private void checkConfigurations() {
+		try {
+			JStar.getInstance().checkConfigurations();
+		} catch (ConfigurationException re) {
+			ConsoleService.getInstance().printErrorMessage(re.getMessage());
+			throw new IllegalArgumentException();
+		}
+	}
+	
+	protected void verify(IFile selectedFile, Shell shell) {
+		checkConfigurations();
+		
 		boolean isSpecInSource = IFilePersistentProperties.isSpecInSourceFile(selectedFile);		
 		String specFile = IFilePersistentProperties.getSpecFile(selectedFile);
 		String logicFile = IFilePersistentProperties.getLogicFile(selectedFile);
@@ -59,11 +65,14 @@ public class VerificationAction {
 	
 	private void executeJStar(IFile selectedFile, boolean isSpecInSource, String specFile, String logicFile, String absFile, List<File> jimpleFiles, PrintMode mode) {
 		String spec;
+		
 		if (isSpecInSource) {
 			spec = AnnotationProcessingService.getInstance().processAnnotations(selectedFile).getAbsolutePath();
-		} else {
+		} 
+		else {
 			spec = specFile;
 		}
+		
 		try {
 			ConsoleService.getInstance().clearConsole();
 			
@@ -75,9 +84,14 @@ public class VerificationAction {
 			}
 			
 			ConsoleService.getInstance().printToConsole("jStar Verification is completed.");
-		} catch (Exception exc) {
-			exc.printStackTrace();
-			exc.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+		} catch (CoreException ce) {
+			ce.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+		} catch (IOException ioe) {
+			ioe.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+		} catch (JSONException jsone) {
+			jsone.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+		} catch (InterruptedException ie) {
+			ie.printStackTrace(ConsoleService.getInstance().getConsoleStream());
 		}
 	}
 

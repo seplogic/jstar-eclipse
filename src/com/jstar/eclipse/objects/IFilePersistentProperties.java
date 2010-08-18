@@ -1,5 +1,6 @@
 package com.jstar.eclipse.objects;
 
+import com.jstar.eclipse.services.ConsoleService;
 import com.jstar.eclipse.services.JStar.PrintMode;
 
 import org.apache.commons.lang.StringUtils;
@@ -79,6 +80,7 @@ public class IFilePersistentProperties {
 			file.setPersistentProperty(name, value);
 		} 
 		catch (CoreException ce) {
+			ConsoleService.getInstance().printErrorMessage("Could not save property " + name.getLocalName() + " with value " + value + " of file " + file.getName() + ".");
 		}
 	}
 	

@@ -13,6 +13,8 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowPulldownDelegate;
 
+import com.jstar.eclipse.services.ConsoleService;
+
 public class ToolbarVerificationAction extends VerificationAction implements
 		IWorkbenchWindowPulldownDelegate {
 	
@@ -34,7 +36,8 @@ public class ToolbarVerificationAction extends VerificationAction implements
 		IFile selectedFile = (IFile) editorInput.getAdapter(IFile.class);
 
 		if (selectedFile == null) {
-			throw new RuntimeException("Cannot access source file");
+			ConsoleService.getInstance().printErrorMessage("Cannot access source file.");
+			throw new NullPointerException();
 		}
 		
 		return selectedFile;

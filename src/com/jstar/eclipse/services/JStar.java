@@ -18,6 +18,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
+import com.jstar.eclipse.exceptions.ConfigurationException;
 import com.jstar.eclipse.preferences.PreferenceConstants;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
@@ -82,7 +83,8 @@ public class JStar {
 		}
 		else {
 			javaFile = pf.getElementName()+ '.' + removeFileExtension(compilationUnit.getElementName());
-			throw new RuntimeException("Currently jStar does not support packages");
+			ConsoleService.getInstance().printErrorMessage("Currently jStar does not support packages");
+			throw new IllegalArgumentException();
 		}
 		
 		final String sootOutput = fileDirectory + File.separator + SootOutput + File.separator + javaFile;
@@ -93,7 +95,7 @@ public class JStar {
 				"-f", "J", 
 				"-output-dir", sootOutput, 
 				"-src-prec", "java",
-				"-v",
+				//"-v",
 				"-print-tags",
 				javaFile};
 		
@@ -108,7 +110,8 @@ public class JStar {
 				types.add(type.getElementName());
 			}
 		} catch (JavaModelException e) {
-			throw new RuntimeException("An error occurred while getting all types.");
+			ConsoleService.getInstance().printErrorMessage("An error occurred while parsing the source file to get all types.");
+			throw new RuntimeException();
 		}
 		
 		final List<File> jimpleFiles = new LinkedList<File>();
@@ -118,9 +121,10 @@ public class JStar {
 				jimpleFiles.add((File)file);
 			}
 		}
-				
+			
 		if (jimpleFiles == null || jimpleFiles.size() == 0) {
-			throw new RuntimeException("An error occurred while converting to java file to jimple format");
+			ConsoleService.getInstance().printErrorMessage("An error occurred while converting java file to jimple format.");
+			throw new NullPointerException();
 		}
 		
 		return jimpleFiles;
@@ -155,33 +159,37 @@ public class JStar {
 		return pb.start();
 	}
 	
-	public void checkConfigurations() {
+	private String getErrorMessage(final String unspecifiedConfig) {
+		return "The location of " + unspecifiedConfig + " is not specified. Go to Window -> Preferences -> jStar Configuration to specify it."; 
+	}
+	
+	public void checkConfigurations() throws ConfigurationException {		
 		if (SystemUtils.IS_OS_WINDOWS && StringUtils.isEmpty(PreferenceConstants.getCygwinPath())) {
-			throw new RuntimeException("Please specify the location of cygwin");
+			throw new ConfigurationException(getErrorMessage("cygwin"));
 		}
 		
 		if (StringUtils.isEmpty(PreferenceConstants.getJStarPath())) {
-			throw new RuntimeException("Please specify the location of jStar");
+			throw new ConfigurationException(getErrorMessage("jStar"));
 		}
 		
 		if (StringUtils.isEmpty(PreferenceConstants.getJStarLogicLibrary())) {
-			throw new RuntimeException("Please specify the location of jStar logic library");
+			throw new ConfigurationException(getErrorMessage("jStar logic library"));
 		}
 		
 		if (StringUtils.isEmpty(PreferenceConstants.getJStarSpecLibrary())) {
-			throw new RuntimeException("Please specify the location of jStar specification library");
+			throw new ConfigurationException(getErrorMessage("jStar specification library"));
 		}
 		
 		if (StringUtils.isEmpty(PreferenceConstants.getSootClassPathRt())) {
-			throw new RuntimeException("Please specify the location of rt.jar file in JAVA jre");
+			throw new ConfigurationException(getErrorMessage("rt.jar file in JAVA jre"));
 		}
 		
 		if (StringUtils.isEmpty(PreferenceConstants.getAnnotationsPath())) {
-			throw new RuntimeException("Please specify the location of annotations.jar file");
+			throw new ConfigurationException(getErrorMessage("annotations.jar file"));
 		}
 		
 		if (StringUtils.isEmpty(PreferenceConstants.getAnnotationProcessorPath())) {
-			throw new RuntimeException("Please specify the location of jstar_processing.jar file");
+			throw new ConfigurationException(getErrorMessage("jstar_processing.jar file"));
 		}
 	}
 

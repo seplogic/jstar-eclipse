@@ -65,7 +65,7 @@ public class AllAnnotations {
 				writer.write("\n");
 			}
 			else {
-				throw new RuntimeException("Unknown kind of element. Currently only class and interface are supported"); 
+				throw new RuntimeException("Unknown kind of element. Currently only class and interface are supported."); 
 			}
 			
 			if (map != null) {

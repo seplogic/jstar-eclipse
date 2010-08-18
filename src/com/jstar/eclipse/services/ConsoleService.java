@@ -25,16 +25,15 @@ import org.eclipse.ui.console.IConsoleView;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import com.jstar.eclipse.objects.VerificationError;
+import com.jstar.eclipse.objects.StreamThread;
 
 public class ConsoleService {
 
 	private static ConsoleService instance;
 
 	private static final String CONSOLE = "Console";
-	private static final String JSTAR_LINE_PREFIX = "json";
 
 	private ConsoleService() {
 	}
@@ -49,6 +48,7 @@ public class ConsoleService {
 	public PrintStream getConsoleStream() {
 		MessageConsole myConsole = findConsole(CONSOLE);
 		MessageConsoleStream out = myConsole.newMessageStream();
+		out.setColor(new Color(null, Colour.RED.getRGB()));
 		return new PrintStream(out);
 	}
 
@@ -76,24 +76,24 @@ public class ConsoleService {
 		}
 	}
 	
-	public void printToConsole(IFile selectedFile, Process pr) throws IOException, JSONException, InterruptedException, CoreException {
-		BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-
-		String line = null;
-
+	public void printErrorMessage(String errorMessage) {
 		MessageConsole myConsole = findConsole(CONSOLE);
 		MessageConsoleStream out = myConsole.newMessageStream();
-
+		out.setColor(new Color(null, Colour.RED.getRGB()));
+		out.println("An error occurred: " + errorMessage);
+		showConsole();
+	}
+	
+	public void printToConsole(IFile selectedFile, Process pr) throws IOException, JSONException, InterruptedException, CoreException {
+		MessageConsole myConsole = findConsole(CONSOLE);
+		MessageConsoleStream out = myConsole.newMessageStream();
 		List<VerificationError> errors = new LinkedList<VerificationError>();
-		while ((line = input.readLine()) != null) {
-			if (line.startsWith(JSTAR_LINE_PREFIX)) {
-				errors.add(new VerificationError(new JSONObject(line
-						.substring(5))));
-				System.out.println(line);
-			} else {
-				out = printLine(line, out);
-			}
-		}
+		
+		StreamThread errorGobbler = new StreamThread(pr.getErrorStream(), out, errors);            
+	    StreamThread outputGobbler = new StreamThread(pr.getInputStream(), out, errors);
+	        
+	    errorGobbler.start();
+	    outputGobbler.start();
 
 		int exitVal = pr.waitFor();
 		
@@ -187,10 +187,8 @@ public class ConsoleService {
 				
 				return new ErrorPos(0, line.length());				
 			} catch (CoreException ce) {
-				ce.printStackTrace();
 				ce.printStackTrace(getConsoleStream());
 			} catch (IOException ioe) {
-				ioe.printStackTrace();
 				ioe.printStackTrace(getConsoleStream());
 			}
 			
@@ -230,10 +228,8 @@ public class ConsoleService {
 			return new ErrorPos(start, end);
 
 		} catch (CoreException ce) {
-			ce.printStackTrace();
 			ce.printStackTrace(getConsoleStream());
 		} catch (IOException ioe) {
-			ioe.printStackTrace();
 			ioe.printStackTrace(getConsoleStream());
 		}
 
@@ -287,7 +283,7 @@ public class ConsoleService {
 		return new ColourIndexPair(null, -1);
 	}
 	
-	private MessageConsoleStream printLine(String line, MessageConsoleStream out) {
+	public MessageConsoleStream printLine(String line, MessageConsoleStream out) {
 		
 		while (StringUtils.isNotEmpty(line)) {
 			final ColourIndexPair colourIndex = findNextColour(line);
