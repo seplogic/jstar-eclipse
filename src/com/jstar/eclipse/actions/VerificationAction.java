@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Shell;
@@ -13,7 +12,8 @@ import org.json.JSONException;
 
 import com.jstar.eclipse.dialogs.InputFileDialog;
 import com.jstar.eclipse.exceptions.ConfigurationException;
-import com.jstar.eclipse.objects.IFilePersistentProperties;
+import com.jstar.eclipse.objects.JavaFilePersistentProperties;
+import com.jstar.eclipse.objects.JavaFile;
 import com.jstar.eclipse.services.AnnotationProcessingService;
 import com.jstar.eclipse.services.ConsoleService;
 import com.jstar.eclipse.services.JStar;
@@ -21,7 +21,7 @@ import com.jstar.eclipse.services.JStar.PrintMode;
 
 public class VerificationAction {
 
-	protected void verifyConfig(IFile selectedFile, Shell shell) {
+	protected void verifyConfig(JavaFile selectedFile, Shell shell) {
 		checkConfigurations();
 
 		final InputFileDialog dialog = new InputFileDialog(shell, selectedFile);
@@ -45,14 +45,14 @@ public class VerificationAction {
 		}
 	}
 	
-	protected void verify(IFile selectedFile, Shell shell) {
+	protected void verify(JavaFile selectedFile, Shell shell) {
 		checkConfigurations();
 		
-		boolean isSpecInSource = IFilePersistentProperties.isSpecInSourceFile(selectedFile);		
-		String specFile = IFilePersistentProperties.getSpecFile(selectedFile);
-		String logicFile = IFilePersistentProperties.getLogicFile(selectedFile);
-		String absFile = IFilePersistentProperties.getAbsFile(selectedFile);
-		PrintMode mode = IFilePersistentProperties.getMode(selectedFile);
+		boolean isSpecInSource = JavaFilePersistentProperties.isSpecInSourceFile(selectedFile);		
+		String specFile = JavaFilePersistentProperties.getSpecFile(selectedFile);
+		String logicFile = JavaFilePersistentProperties.getLogicFile(selectedFile);
+		String absFile = JavaFilePersistentProperties.getAbsFile(selectedFile);
+		PrintMode mode = JavaFilePersistentProperties.getMode(selectedFile);
 		final List<File> jimpleFiles = JStar.getInstance().convertToJimple(selectedFile);
 		
 		if ((StringUtils.isEmpty(specFile) && !isSpecInSource) || logicFile.isEmpty() || absFile.isEmpty()) {
@@ -63,7 +63,7 @@ public class VerificationAction {
 		executeJStar(selectedFile, isSpecInSource, specFile, logicFile, absFile, jimpleFiles, mode);
 	}
 	
-	private void executeJStar(IFile selectedFile, boolean isSpecInSource, String specFile, String logicFile, String absFile, List<File> jimpleFiles, PrintMode mode) {
+	private void executeJStar(JavaFile selectedFile, boolean isSpecInSource, String specFile, String logicFile, String absFile, List<File> jimpleFiles, PrintMode mode) {
 		String spec;
 		
 		if (isSpecInSource) {
@@ -76,10 +76,10 @@ public class VerificationAction {
 		try {
 			ConsoleService.getInstance().clearConsole();
 			
-			ConsoleService.getInstance().clearMarkers(selectedFile);
+			selectedFile.clearMarkers();
 			
 			for (File jimpleFile : jimpleFiles) {
-				Process pr = JStar.getInstance().executeJStar(selectedFile, spec, logicFile, absFile, jimpleFile.getAbsolutePath(), mode);			
+				Process pr = JStar.getInstance().executeJStar(spec, logicFile, absFile, jimpleFile.getAbsolutePath(), mode);			
 				ConsoleService.getInstance().printToConsole(selectedFile, pr);
 			}
 			

@@ -5,15 +5,12 @@ import java.io.File;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
-import org.eclipse.core.resources.IFile;
-
+import com.jstar.eclipse.objects.JavaFile;
 import com.jstar.eclipse.preferences.PreferenceConstants;
 
 public class AnnotationProcessingService {
-	
-	public static final String INPUT_FILES = "input_files";
+
 	public final static String SPEC_EXT = ".spec";
-	private static final String GENERATED = "generated";
 	private static final String PROCESSOR = "com.jstar.eclipse.processing.SpecAnnotationProcessor";
 	
 	private static AnnotationProcessingService instance;
@@ -28,18 +25,18 @@ public class AnnotationProcessingService {
 		return instance;
 	}
 	
-	public File processAnnotations(IFile selectedFile) {
+	public File processAnnotations(JavaFile selectedFile) {
 		
 		final JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
 		
-		final String generated = makeGeneratedDir(selectedFile);
+		final String generated = selectedFile.makeGeneratedDir();
 		
 		String[] arguments = {
 				"-proc:only", 
 				"-d", generated, 
-				"-cp", PreferenceConstants.getAnnotationsPath() + ';' + PreferenceConstants.getAnnotationProcessorPath(),
+				"-cp", selectedFile.getProjectClasspath() + File.pathSeparator + PreferenceConstants.getAnnotationProcessorPath(),
 				"-processor", PROCESSOR,
-				selectedFile.getLocation().toOSString()
+				selectedFile.getAbsolutePath()
 		};
 		
 		int exitValue = javac.run(null, null, ConsoleService.getInstance().getConsoleStream(), arguments);
@@ -59,27 +56,7 @@ public class AnnotationProcessingService {
 		return specFile;
 	}
 	
-	private String makeGeneratedDir(IFile selectedFile) {
-		final File fileLocation = new File(selectedFile.getLocation().toString()).getParentFile();
-		
-		final String inputFilesLocationString = fileLocation.getAbsolutePath() + File.separator + INPUT_FILES;
-		final File inputFilesLocation = new File(inputFilesLocationString);
-		
-		if (!inputFilesLocation.exists() || !inputFilesLocation.isDirectory()) {
-			inputFilesLocation.mkdir();
-		}
-		
-		final String generatedLocationString = inputFilesLocationString + File.separator + GENERATED;
-		final File generatedLocation = new File(generatedLocationString);
-		
-		if (!generatedLocation.exists() || !generatedLocation.isDirectory()) {
-			generatedLocation.mkdir();
-		}
-		
-		return generatedLocationString;
-	}
-	
-	public String removeFileExtension(final String fileName) {
+	private String removeFileExtension(final String fileName) {
 		int dot = fileName.lastIndexOf('.');
 		return fileName.substring(0, dot);
 	}

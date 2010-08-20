@@ -13,6 +13,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowPulldownDelegate;
 
+import com.jstar.eclipse.objects.JavaFile;
 import com.jstar.eclipse.services.ConsoleService;
 
 public class ToolbarVerificationAction extends VerificationAction implements
@@ -30,7 +31,7 @@ public class ToolbarVerificationAction extends VerificationAction implements
 		return menu;
 	}
 	
-	private IFile getSelectedFile() {
+	private JavaFile getSelectedFile() {
 		IEditorInput editorInput = window.getActivePage().getActiveEditor().getEditorInput();
 
 		IFile selectedFile = (IFile) editorInput.getAdapter(IFile.class);
@@ -40,7 +41,7 @@ public class ToolbarVerificationAction extends VerificationAction implements
 			throw new NullPointerException();
 		}
 		
-		return selectedFile;
+		return new JavaFile(selectedFile);
 	}
 
 	private Menu createMenu(Control parent) {

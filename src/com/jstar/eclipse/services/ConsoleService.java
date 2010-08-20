@@ -1,16 +1,12 @@
 package com.jstar.eclipse.services;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
@@ -26,6 +22,8 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.json.JSONException;
 
+import com.jstar.eclipse.objects.ErrorPosition;
+import com.jstar.eclipse.objects.JavaFile;
 import com.jstar.eclipse.objects.VerificationError;
 import com.jstar.eclipse.objects.StreamThread;
 
@@ -64,18 +62,6 @@ public class ConsoleService {
 		myConsole.clearConsole();
 	}
 	
-	public void clearMarkers(IFile selectedFile) throws CoreException {
-		IMarker[] problems = selectedFile.findMarkers(
-				VerificationError.JSTAR_ERROR_MARKER, 
-				true,
-				IResource.DEPTH_INFINITE
-		);
-		
-		for (IMarker problem : problems) {
-			problem.delete();
-		}
-	}
-	
 	public void printErrorMessage(String errorMessage) {
 		MessageConsole myConsole = findConsole(CONSOLE);
 		MessageConsoleStream out = myConsole.newMessageStream();
@@ -84,7 +70,7 @@ public class ConsoleService {
 		showConsole();
 	}
 	
-	public void printToConsole(IFile selectedFile, Process pr) throws IOException, JSONException, InterruptedException, CoreException {
+	public void printToConsole(JavaFile selectedFile, Process pr) throws IOException, JSONException, InterruptedException, CoreException {
 		MessageConsole myConsole = findConsole(CONSOLE);
 		MessageConsoleStream out = myConsole.newMessageStream();
 		List<VerificationError> errors = new LinkedList<VerificationError>();
@@ -106,8 +92,7 @@ public class ConsoleService {
 				IMarker marker = selectedFile.createMarker(VerificationError.JSTAR_ERROR_MARKER);
 				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
 
-				final ErrorPos errorOffset = getErrorPos(
-						selectedFile, 
+				final ErrorPosition errorOffset = selectedFile.getErrorPosition(
 						error.getStartLine(), 
 						error.getEndLine(), 
 						error.getStartPos(), 
@@ -153,87 +138,6 @@ public class ConsoleService {
 			npe.printStackTrace();
 		}
 		
-	}
-
-	private class ErrorPos {
-		private int startPos;
-		private int endPos;
-
-		public ErrorPos(int start, int end) {
-			startPos = start;
-			endPos = end;
-		}
-
-		public int getEndPos() {
-			return endPos;
-		}
-
-		public int getStartPos() {
-			return startPos;
-		}
-	}
-
-	private ErrorPos getErrorPos(IFile javaFile, int startLine, int endLine, int startSymbol, int endSymbol) {
-		BufferedReader input;
-		String line = null;
-		int lineNumber = 1;
-		int start = 0;
-		int end = 0;
-		
-		if (startLine == -1 || endLine == -1 || startSymbol == -1 || endSymbol == -1) {
-			try {
-				input = new BufferedReader(new InputStreamReader(javaFile.getContents()));
-				line = input.readLine();
-				
-				return new ErrorPos(0, line.length());				
-			} catch (CoreException ce) {
-				ce.printStackTrace(getConsoleStream());
-			} catch (IOException ioe) {
-				ioe.printStackTrace(getConsoleStream());
-			}
-			
-			return new ErrorPos(0, 0);			
-		}
-
-		try {
-			char character;
-			char nextCharacter = ' ';
-			InputStreamReader inputStreamReader = new InputStreamReader(javaFile.getContents());	
-			
-			character = (char)inputStreamReader.read();
-			while (inputStreamReader.ready()) {
-				
-				if (lineNumber < startLine) {
-					start += 1;
-					end += 1;
-				} 
-				else if (lineNumber < endLine) {
-					end += 1;
-				}
-				else {
-					break;
-				}
-				
-				nextCharacter = (char)inputStreamReader.read();
-				if (character == '\n' || (character == '\r' && nextCharacter != '\n') ) {
-					lineNumber++;
-				}
-				
-				character = nextCharacter;
-			}
-
-			start += startSymbol - 1;
-			end += endSymbol;
-
-			return new ErrorPos(start, end);
-
-		} catch (CoreException ce) {
-			ce.printStackTrace(getConsoleStream());
-		} catch (IOException ioe) {
-			ioe.printStackTrace(getConsoleStream());
-		}
-
-		return new ErrorPos(0, 0);
 	}
 
 	private class ColourIndexPair {

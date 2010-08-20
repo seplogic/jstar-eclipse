@@ -7,6 +7,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
+import com.jstar.eclipse.objects.JavaFile;
+
 public class ContextMenuVerificationAction extends VerificationAction implements IObjectActionDelegate {
 	
 	private IWorkbenchPart workbenchPart; 
@@ -20,7 +22,7 @@ public class ContextMenuVerificationAction extends VerificationAction implements
 	@Override
 	public void run(IAction action) {
 		final IFile selectedFile = (IFile) ((IStructuredSelection) this.selection).getFirstElement();					
-		verify(selectedFile, workbenchPart.getSite().getShell());
+		verify(new JavaFile(selectedFile), workbenchPart.getSite().getShell());
 	}
 
 	@Override

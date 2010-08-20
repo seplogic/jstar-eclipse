@@ -3,7 +3,6 @@ package com.jstar.eclipse.dialogs;
 import java.io.File;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -23,7 +22,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import com.jstar.eclipse.Activator;
-import com.jstar.eclipse.objects.IFilePersistentProperties;
+import com.jstar.eclipse.objects.JavaFilePersistentProperties;
+import com.jstar.eclipse.objects.JavaFile;
 import com.jstar.eclipse.services.AnnotationProcessingService;
 import com.jstar.eclipse.services.JStar.PrintMode;
 
@@ -33,7 +33,7 @@ public class InputFileDialog extends Dialog {
 	private final String LOGIC = "logic";
 	private final String ABS = "abs";
 	
-	private IFile selectedFile;
+	private JavaFile selectedFile;
 	
 	private Text specField;
 	private Text logicField;
@@ -55,7 +55,7 @@ public class InputFileDialog extends Dialog {
 	private boolean separateSpec;
 
 
-	public InputFileDialog(Shell parentShell, IFile selectedFile) {
+	public InputFileDialog(Shell parentShell, JavaFile selectedFile) {
 		super(parentShell);
 		this.selectedFile = selectedFile;
 	}
@@ -76,7 +76,7 @@ public class InputFileDialog extends Dialog {
 	}
 	
 	private String getSelectedFileLocation() {
-		return new File(selectedFile.getLocation().toString()).getParentFile().getAbsolutePath();
+		return new File(selectedFile.getFile().getLocation().toOSString()).getParentFile().getAbsolutePath();
 	}
 	
 	private void addModeGroup(Composite component) {
@@ -95,7 +95,7 @@ public class InputFileDialog extends Dialog {
 	    verbose.setText("Run jStar in verbose mode");
 	    verbose.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-	    setMode(IFilePersistentProperties.getMode(selectedFile));
+	    setMode(JavaFilePersistentProperties.getMode(selectedFile));
 	}
 
 	
@@ -153,7 +153,7 @@ public class InputFileDialog extends Dialog {
 		});
 		specButton.setText("Browse");
 		
-	    if (IFilePersistentProperties.isSpecInSourceFile(selectedFile)) {
+	    if (JavaFilePersistentProperties.isSpecInSourceFile(selectedFile)) {
 	    	specSource.setSelection(true);
 	    	setEnabledSpecSeparate(false);
 	    }
@@ -217,7 +217,7 @@ public class InputFileDialog extends Dialog {
 	}
 	
 	private void setDefaultAbs(String fileLocation) {
-		final String absFile = IFilePersistentProperties.getAbsFile(selectedFile);
+		final String absFile = JavaFilePersistentProperties.getAbsFile(selectedFile);
 		
 		if (StringUtils.isEmpty(absFile)) {
 			final File defaultAbsFile = new File(inputFileDirectory(fileLocation) + ABS);
@@ -232,7 +232,7 @@ public class InputFileDialog extends Dialog {
 	}
 
 	private void setDefaultLogic(final String fileLocation) {
-		final String logicFile = IFilePersistentProperties.getLogicFile(selectedFile);
+		final String logicFile = JavaFilePersistentProperties.getLogicFile(selectedFile);
 		
 		if (StringUtils.isEmpty(logicFile)) {
 			final File defaultLogicFile = new File(inputFileDirectory(fileLocation) + LOGIC);
@@ -247,7 +247,7 @@ public class InputFileDialog extends Dialog {
 	}
 
 	private void setDefaultSpec(final String fileLocation) {
-		final String specFile = IFilePersistentProperties.getSpecFile(selectedFile);
+		final String specFile = JavaFilePersistentProperties.getSpecFile(selectedFile);
 		
 		if (StringUtils.isEmpty(specFile)) {	
 			final File defaultSpecFileSpecs = new File(inputFileDirectory(fileLocation) + SPECS);
@@ -274,7 +274,7 @@ public class InputFileDialog extends Dialog {
 	}
 	
 	private String inputFileDirectory(final String fileLocation) {
-		return fileLocation + File.separator + AnnotationProcessingService.INPUT_FILES + File.separator;
+		return fileLocation + File.separator + JavaFile.INPUT_FILES + File.separator;
 	}
 
 	private PrintMode getMode() {
@@ -352,11 +352,11 @@ public class InputFileDialog extends Dialog {
 	@Override
 	protected void okPressed() {
 		setSpecFieldValue(specField.getText());
-		IFilePersistentProperties.setSpecFile(selectedFile, specField.getText());
+		JavaFilePersistentProperties.setSpecFile(selectedFile, specField.getText());
 		setLogicFieldValue(logicField.getText());
-		IFilePersistentProperties.setLogicFile(selectedFile, logicField.getText());
+		JavaFilePersistentProperties.setLogicFile(selectedFile, logicField.getText());
 		setAbsFieldValue(absField.getText());
-		IFilePersistentProperties.setAbsFile(selectedFile, absField.getText());
+		JavaFilePersistentProperties.setAbsFile(selectedFile, absField.getText());
 		
 		if (jimpleFileField != null) {
 			setJimpleFile((String)jimpleFileField.getData(jimpleFileField.getItem(jimpleFileField.getSelectionIndex())));
@@ -364,7 +364,7 @@ public class InputFileDialog extends Dialog {
 		
 		final PrintMode mode = getMode();
 		setPrintMode(mode);
-		IFilePersistentProperties.setMode(selectedFile, mode);
+		JavaFilePersistentProperties.setMode(selectedFile, mode);
 
 		
 		if (specSource.getSelection()) {
@@ -374,7 +374,7 @@ public class InputFileDialog extends Dialog {
 			separateSpec = true;
 		}
 		
-		IFilePersistentProperties.setSpecInSourceFile(selectedFile, !separateSpec);
+		JavaFilePersistentProperties.setSpecInSourceFile(selectedFile, !separateSpec);
 		
 		super.okPressed();
 	}
