@@ -5,9 +5,15 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorDescriptor;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
 import org.json.JSONException;
 
 import com.jstar.eclipse.dialogs.InputFileDialog;
@@ -92,6 +98,18 @@ public class VerificationAction {
 			jsone.printStackTrace(ConsoleService.getInstance().getConsoleStream());
 		} catch (InterruptedException ie) {
 			ie.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+		}
+	}
+	
+	protected void openFileInEditor(final IFile selectedFile) {
+		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();	
+		IEditorDescriptor desc = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(selectedFile.getName());
+		
+		try {
+			page.openEditor(new FileEditorInput(selectedFile), desc.getId());
+		} 
+		catch (PartInitException pie) {
+			pie.printStackTrace(ConsoleService.getInstance().getConsoleStream());
 		}
 	}
 

@@ -23,7 +23,8 @@ public class ContextMenuVerificationConfigAction extends VerificationAction impl
 	@Override
 	public void run(IAction action) {	
 		ConsoleService.getInstance().clearConsole();
-		final IFile selectedFile = (IFile) ((IStructuredSelection) this.selection).getFirstElement();					
+		final IFile selectedFile = (IFile) ((IStructuredSelection) this.selection).getFirstElement();
+		openFileInEditor(selectedFile);
 		verifyConfig(new JavaFile(selectedFile), workbenchPart.getSite().getShell());	
 	}
 	
