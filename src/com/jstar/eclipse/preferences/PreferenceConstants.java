@@ -31,8 +31,6 @@ public class PreferenceConstants {
 	
 	public final static String SPEC_ANNOTATIONS_PREFERENCE = "annotationsPreference";
 	
-	public final static String ANNOTATION_PROCESSOR_PREFERENCE = "annotationProcessorPreference";
-
 	public static String getJStarExecutable() {
 		return getJStarPath() + File.separator + "jStar";
 	}
@@ -63,10 +61,6 @@ public class PreferenceConstants {
 	
 	public static String getAnnotationsPath() {
 		return getStore().getString(PreferenceConstants.SPEC_ANNOTATIONS_PREFERENCE);
-	}
-	
-	public static String getAnnotationProcessorPath() {
-		return getStore().getString(PreferenceConstants.ANNOTATION_PROCESSOR_PREFERENCE);
 	}
 	
 	private static IPreferenceStore getStore() {

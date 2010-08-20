@@ -141,10 +141,6 @@ public class JStar {
 		if (StringUtils.isEmpty(PreferenceConstants.getAnnotationsPath())) {
 			throw new ConfigurationException(getErrorMessage("annotations.jar file"));
 		}
-		
-		if (StringUtils.isEmpty(PreferenceConstants.getAnnotationProcessorPath())) {
-			throw new ConfigurationException(getErrorMessage("jstar_processing.jar file"));
-		}
 	}
 
 	private String getCygwinPath() {

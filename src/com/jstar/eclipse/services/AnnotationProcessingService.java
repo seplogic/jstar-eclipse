@@ -1,12 +1,17 @@
 package com.jstar.eclipse.services;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
+
+import com.jstar.eclipse.Activator;
 import com.jstar.eclipse.objects.JavaFile;
-import com.jstar.eclipse.preferences.PreferenceConstants;
 
 public class AnnotationProcessingService {
 
@@ -31,10 +36,22 @@ public class AnnotationProcessingService {
 		
 		final String generated = selectedFile.makeGeneratedDir();
 		
+		
+		final URL processorURL = FileLocator.find(Activator.getDefault().getBundle(), new Path("jar files" + File.separator + "processing" + File.separator + "jstar_processing.jar"), null);
+		String processorLocation = "";
+		try {
+			processorLocation = FileLocator.toFileURL(processorURL).getFile();
+		} catch (IOException ioe) {
+			ConsoleService.getInstance().printErrorMessage("Cannot obtain the location of annotation processing.");
+			ioe.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+			throw new RuntimeException();
+		}
+		
+				
 		String[] arguments = {
 				"-proc:only", 
 				"-d", generated, 
-				"-cp", selectedFile.getProjectClasspath() + File.pathSeparator + PreferenceConstants.getAnnotationProcessorPath(),
+				"-cp", selectedFile.getProjectClasspath() + File.pathSeparator + processorLocation,
 				"-processor", PROCESSOR,
 				selectedFile.getAbsolutePath()
 		};
