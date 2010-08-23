@@ -18,10 +18,11 @@ import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.eclipse.core.runtime.Path;
 
 public class JStar {
-
-	private static JStar instance;
 	
+	private static JStar instance;
 	private static final String SootOutput = "sootOutput";
+	private static final String TERM = "TERM";
+	private static final String XTERMCOLOR = "xterm-color";
 
 	private JStar() {
 	}
@@ -98,8 +99,8 @@ public class JStar {
 		
 		Map<String, String> env = pb.environment();
 		
-		String path = StringUtils.isEmpty(env.get("Path")) ? "" : File.pathSeparator + env.get("Path");
-		env.put("Path", getCygwinPath() + PreferenceConstants.getJStarPath() + path);
+		String path = StringUtils.isEmpty(env.get("Path")) ? "" : env.get("Path");
+		env.put("Path", getCygwinPath() + path);
 		
 		env.put(PreferenceConstants.JSTAR_LOGIC_LIBRARY,
 				PreferenceConstants.getJStarLogicLibrary());
@@ -107,6 +108,7 @@ public class JStar {
 				PreferenceConstants.getJStarAbsLibrary());
 		env.put(PreferenceConstants.JSTAR_SPECS_LIBRARY,
 				PreferenceConstants.getJStarSpecLibrary());
+		env.put(TERM, XTERMCOLOR);
 
 		return pb.start();
 	}
@@ -120,8 +122,8 @@ public class JStar {
 			throw new ConfigurationException(getErrorMessage("cygwin"));
 		}
 		
-		if (StringUtils.isEmpty(PreferenceConstants.getJStarPath())) {
-			throw new ConfigurationException(getErrorMessage("jStar"));
+		if (StringUtils.isEmpty(PreferenceConstants.getJStarExecutable())) {
+			throw new ConfigurationException(getErrorMessage("jStar executable"));
 		}
 		
 		if (StringUtils.isEmpty(PreferenceConstants.getJStarLogicLibrary())) {
@@ -134,10 +136,6 @@ public class JStar {
 		
 		if (StringUtils.isEmpty(PreferenceConstants.getSootClassPathRt())) {
 			throw new ConfigurationException(getErrorMessage("rt.jar file in JAVA jre"));
-		}
-		
-		if (StringUtils.isEmpty(PreferenceConstants.getAnnotationsPath())) {
-			throw new ConfigurationException(getErrorMessage("annotations.jar file"));
 		}
 	}
 

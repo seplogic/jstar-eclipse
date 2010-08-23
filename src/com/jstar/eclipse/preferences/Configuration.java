@@ -18,8 +18,7 @@ public class Configuration
 	
 
 	public void createFieldEditors() {
-		addField(new DirectoryFieldEditor(PreferenceConstants.JSTAR_PATH, "&jStar executable:", getFieldEditorParent()));
-		addField(new FileFieldEditor(PreferenceConstants.SPEC_ANNOTATIONS_PREFERENCE, "Annotation library location:", getFieldEditorParent()));
+		addField(new FileFieldEditor(PreferenceConstants.JSTAR_PATH, "&jStar executable:", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.JSTAR_LOGIC_LIBRARY_PREFERENCE, "&jStar Logic Library:", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.JSTAR_ABS_LIBRARY_PREFERENCE, "&jStar Abs Library:", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.JSTAR_SPECS_LIBRARY_PREFERENCE, "&jStar Specs Library:", getFieldEditorParent()));
