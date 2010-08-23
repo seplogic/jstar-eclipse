@@ -25,7 +25,6 @@ public class ImportObject extends AnnotationObject {
 		for (final String specFile : specFiles) {
 			writer.write("import \"" + specFile + "\";\n");
 		}
-		appendPosition(writer);
 	}
 
 

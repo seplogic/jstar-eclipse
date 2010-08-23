@@ -22,7 +22,6 @@ public class PredicateObject extends AnnotationObject {
 	@Override
 	public void generateFile(Writer writer) throws IOException {
 		writer.write("   " + type.toString().toLowerCase() + " " + predicate + " as " + formula + ";\n");
-		appendPosition(writer);
 	}
 
 	public void setPredicate(String predicate) {

@@ -21,15 +21,17 @@ public class SpecObjectList extends AnnotationObject {
 	@Override
 	public void generateFile(Writer writer) throws IOException {
 		writer.write("   " + methodDeclaration + appendStatic() + " :\n");
-
 		boolean first = true;
+		
 		for (SpecObject specObject : specObjects) {
 			if (!first) {
 				writer.write("andalso\n");
 			}
+			
 	        first = false;
 			specObject.generateFileForList(writer);		
 		}
+		
 		appendPosition(writer);
 	}
 

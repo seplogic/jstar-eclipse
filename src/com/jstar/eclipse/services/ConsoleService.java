@@ -80,6 +80,9 @@ public class ConsoleService {
 	        
 	    errorGobbler.start();
 	    outputGobbler.start();
+	    
+	    errorGobbler.join();
+	    outputGobbler.join();
 
 		int exitVal = pr.waitFor();
 		

@@ -55,7 +55,7 @@ public class ToolbarVerificationAction extends VerificationAction implements
 		});
 		
 		final MenuItem config = new MenuItem(menu, SWT.PUSH);
-		config.setText("Verify with jStar Configutations...");
+		config.setText("Verify with jStar Configurations...");
 		config.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				verifyConfig(getSelectedFile(), window.getShell());
