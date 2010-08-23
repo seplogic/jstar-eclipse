@@ -77,7 +77,8 @@
                id="com.jstar.eclipse.verification.action.from.toolbar"
                label="jStar Verification"
                style="pulldown"
-               toolbarPath="Normal/additions">
+               toolbarPath="Normal/additions"
+               tooltip="Verify with jStar">
          </action>
       </actionSet>
    </extension>

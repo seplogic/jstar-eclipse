@@ -257,7 +257,7 @@ public class InputFileDialog extends Dialog {
 				return;
 			}
 			
-			final File defaultSpecFileClassSpec = new File(inputFileDirectory(fileLocation) + removeFileExtension(selectedFile.getName()) + AnnotationProcessingService.SPEC_EXT);
+			final File defaultSpecFileClassSpec = new File(inputFileDirectory(fileLocation) + selectedFile.getNameWithoutExtension() + AnnotationProcessingService.SPEC_EXT);
 			
 			if (defaultSpecFileClassSpec.exists()) {
 				specField.setText(defaultSpecFileClassSpec.getAbsolutePath());
@@ -266,11 +266,6 @@ public class InputFileDialog extends Dialog {
 		}
 		
 		specField.setText(specFile);
-	}
-	
-	private String removeFileExtension(final String fileName) {
-		int dot = fileName.lastIndexOf('.');
-		return fileName.substring(0, dot);
 	}
 	
 	private String inputFileDirectory(final String fileLocation) {

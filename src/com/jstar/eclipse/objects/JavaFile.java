@@ -57,7 +57,11 @@ public class JavaFile {
 	}
 	
 	public String getNameWithPackage() {
-		return getPackage() + file.getFullPath().removeFileExtension().lastSegment();	
+		return getPackage() + getNameWithoutExtension();	
+	}
+	
+	public String getNameWithoutExtension() {
+		return file.getFullPath().removeFileExtension().lastSegment();
 	}
 	
 	public String getPackage() {

@@ -35,9 +35,8 @@ public class VerificationAction {
 		dialog.setBlockOnOpen(true);
 		final int returnValue = dialog.open();
 		
-		final List<File> jimpleFiles = JStar.getInstance().convertToJimple(selectedFile);
-
 		if (returnValue == IDialogConstants.OK_ID) {
+			final List<File> jimpleFiles = JStar.getInstance().convertToJimple(selectedFile);
 			executeJStar(selectedFile, !dialog.isSeparateSpec(), dialog.getSpecFieldValue(), dialog.getLogicFieldValue(), dialog.getAbsFieldValue(), jimpleFiles, dialog.getPrintMode());
 		}
 	}

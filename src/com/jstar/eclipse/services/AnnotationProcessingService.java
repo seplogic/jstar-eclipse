@@ -63,7 +63,7 @@ public class AnnotationProcessingService {
 			throw new RuntimeException();
 		}
 		
-		final File specFile = new File(generated + File.separator + removeFileExtension(selectedFile.getName().toString()) + SPEC_EXT);
+		final File specFile = new File(generated + File.separator + selectedFile.getNameWithoutExtension() + SPEC_EXT);
 		
 		if (!specFile.exists()) {
 			ConsoleService.getInstance().printErrorMessage("Any annotations could be found in the source file.");
@@ -71,11 +71,6 @@ public class AnnotationProcessingService {
 		}
 
 		return specFile;
-	}
-	
-	private String removeFileExtension(final String fileName) {
-		int dot = fileName.lastIndexOf('.');
-		return fileName.substring(0, dot);
 	}
 
 }

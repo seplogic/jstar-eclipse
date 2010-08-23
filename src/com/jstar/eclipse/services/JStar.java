@@ -15,6 +15,7 @@ import com.jstar.eclipse.objects.JavaFile;
 import com.jstar.eclipse.preferences.PreferenceConstants;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
+import org.eclipse.core.runtime.Path;
 
 public class JStar {
 
@@ -47,11 +48,6 @@ public class JStar {
 		}		
 	}
 	
-	public String removeFileExtension(final String fileName) {
-		int dot = fileName.lastIndexOf('.');
-		return fileName.substring(0, dot);
-	}
-
 	@SuppressWarnings("static-access")
 	// in io 2.0 FileUtils.listFiles should return Collection<File> instead of Collection
 	public List<File> convertToJimple(final JavaFile fileToConvert) {
@@ -75,7 +71,9 @@ public class JStar {
 		final List<File> jimpleFiles = new LinkedList<File>();
 		
 		for (Object file : (FileUtils.listFiles(new File(sootOutput), new WildcardFileFilter("*.jimple"), null))) {
-			if (types.indexOf(removeFileExtension(((File)file).getName())) != -1) {
+			final String fileName = ((File)file).getName();
+			
+			if (types.indexOf(new Path(fileName).removeFileExtension().toOSString()) != -1) {
 				jimpleFiles.add((File)file);
 			}
 		}
