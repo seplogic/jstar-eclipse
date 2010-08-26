@@ -11,10 +11,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import com.jstar.eclipse.annotations.Import;
@@ -102,16 +100,15 @@ public class AllAnnotations {
 		classDeclaration.append(className.getKind().toString().toLowerCase());
 		classDeclaration.append(" ");
 		classDeclaration.append(className.getSimpleName().toString()).append(" ");
-		final TypeMirror superClass = ((TypeElement)className).getSuperclass();
+		
+		/*final TypeMirror superClass = ((TypeElement)className).getSuperclass();
 
-		System.out.println("test add class declaration");
-		System.out.println(superClass.toString());
 		if (!superClass.getKind().equals(TypeKind.NONE) && !"java.lang.Object".equalsIgnoreCase(superClass.toString())) {
 			System.out.println(superClass.toString());
 			classDeclaration.append("extends ").append(superClass.toString()).append(" ");
-		}
+		}*/
 		
-		final List<? extends TypeMirror> interfaces = ((TypeElement)className).getInterfaces();
+		/*final List<? extends TypeMirror> interfaces = ((TypeElement)className).getInterfaces();
 		if (!interfaces.isEmpty()) {
 			classDeclaration.append("implements ");
 			
@@ -120,10 +117,10 @@ public class AllAnnotations {
 			}
 			
 			classDeclaration.delete(classDeclaration.length() - 2, classDeclaration.length());
-		}
+		}*/
  		
 		writer.write(classDeclaration.toString());
-		writer.write(" { \n");		
+		writer.write("{ \n");		
 	}
 
 	public boolean isEmpty() {

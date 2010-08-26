@@ -26,14 +26,14 @@ public class SpecObject extends AnnotationObject {
 	@Override
 	public void generateFile(Writer writer) throws IOException {
 		writer.write("   " + methodDeclaration + appendStatic() + " :\n");
-		writer.write("   { " + pre + " }\n");
-		writer.write("   { " + post + " }\n");
+		writer.write("      { " + pre + " }\n");
+		writer.write("      { " + post + " }\n");
 		appendPosition(writer);
 	}
 	
 	public void generateFileForList(Writer writer) throws IOException {
-		writer.write("   { " + pre + " }\n");
-		writer.write("   { " + post + " }\n");
+		writer.write("      { " + pre + " }\n");
+		writer.write("      { " + post + " }\n");
 	}
 
 	public void setMethodDeclaration(String methodDeclaration) {

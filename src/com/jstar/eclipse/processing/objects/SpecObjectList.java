@@ -25,7 +25,7 @@ public class SpecObjectList extends AnnotationObject {
 		
 		for (SpecObject specObject : specObjects) {
 			if (!first) {
-				writer.write("andalso\n");
+				writer.write("      andalso\n");
 			}
 			
 	        first = false;
