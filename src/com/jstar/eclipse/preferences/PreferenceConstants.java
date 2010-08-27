@@ -1,7 +1,5 @@
 package com.jstar.eclipse.preferences;
 
-import java.io.File;
-
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import com.jstar.eclipse.Activator;
