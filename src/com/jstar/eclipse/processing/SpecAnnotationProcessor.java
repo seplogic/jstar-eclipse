@@ -27,6 +27,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 
+@SuppressWarnings("restriction")
 @SupportedAnnotationTypes("com.jstar.eclipse.annotations.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 

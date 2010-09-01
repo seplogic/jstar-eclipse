@@ -9,8 +9,9 @@ import org.eclipse.ui.IWorkbenchPart;
 
 import com.jstar.eclipse.objects.JavaFile;
 import com.jstar.eclipse.services.ConsoleService;
+import com.jstar.eclipse.services.VerificationService;
 
-public class ContextMenuVerificationConfigAction extends VerificationAction implements IObjectActionDelegate {
+public class ContextMenuVerificationConfigAction implements IObjectActionDelegate {
 	
 	private IWorkbenchPart workbenchPart; 
 	private ISelection selection;
@@ -22,10 +23,9 @@ public class ContextMenuVerificationConfigAction extends VerificationAction impl
 
 	@Override
 	public void run(IAction action) {	
-		ConsoleService.getInstance().clearConsole();
 		final IFile selectedFile = (IFile) ((IStructuredSelection) this.selection).getFirstElement();
-		openFileInEditor(selectedFile);
-		verifyConfig(new JavaFile(selectedFile), workbenchPart.getSite().getShell());	
+		VerificationService.getInstance().openFileInEditor(selectedFile);
+		VerificationService.getInstance().verifyConfig(new JavaFile(selectedFile), workbenchPart.getSite().getShell());	
 	}
 	
 	@Override
@@ -33,5 +33,4 @@ public class ContextMenuVerificationConfigAction extends VerificationAction impl
 		this.selection = selection;
 	}
 	
-
 }

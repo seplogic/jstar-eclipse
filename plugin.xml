@@ -66,21 +66,77 @@
       </initializer>
    </extension>
    <extension
-         point="org.eclipse.ui.actionSets">
-      <actionSet
-            id="com.jstar.eclipse.jstar.verification.action"
-            label="%actionSet.label"
-            visible="true">
-         <action
-               class="com.jstar.eclipse.actions.ToolbarVerificationAction"
-               icon="icons/jStar.gif"
-               id="com.jstar.eclipse.verification.action.from.toolbar"
-               label="%action.label.1"
-               style="pulldown"
-               toolbarPath="Normal/additions"
-               tooltip="%action.tooltip.1">
-         </action>
-      </actionSet>
+         point="org.eclipse.ui.commands">
+      <command
+            id="com.jstar.eclipse.verification"
+            name="Verify with jStar">
+      </command>
+      <command
+            id="com.jstar.eclipse.verification.config"
+            name="Verify with jStar Configurations...">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="toolbar:org.eclipse.ui.main.toolbar">
+         <toolbar
+               id="com.jstar.eclipse.toolbar1">
+            <command
+                  commandId="com.jstar.eclipse.verification"
+                  style="pulldown">
+            </command>
+         </toolbar>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:com.jstar.eclipse.verification">
+         <command
+               commandId="com.jstar.eclipse.verification.config"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="com.jstar.eclipse.handlers.VerificationHandler"
+            commandId="com.jstar.eclipse.verification">
+         <activeWhen>
+            <with
+                  variable="activeEditorInput">
+               <adapt
+                     type="org.eclipse.core.resources.IFile">
+                  <test
+                        property="org.eclipse.core.resources.extension"
+                        value="java">
+                  </test>
+               </adapt>
+            </with>
+         </activeWhen>
+      </handler>
+      <handler
+            class="com.jstar.eclipse.handlers.VerificationConfigHandler"
+            commandId="com.jstar.eclipse.verification.config">
+         <activeWhen>
+            <with
+                  variable="activeEditorInput">
+               <adapt
+                     type="org.eclipse.core.resources.IFile">
+                  <test
+                        property="org.eclipse.core.resources.extension"
+                        value="java">
+                  </test>
+               </adapt>
+            </with>
+         </activeWhen>
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commandImages">
+      <image
+            commandId="com.jstar.eclipse.verification"
+            icon="icons/jStar.gif">
+      </image>
    </extension>
 
 </plugin>

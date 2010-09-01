@@ -57,11 +57,6 @@ public class ConsoleService {
 		showConsole();
 	}
 	
-	public void clearConsole() {
-		MessageConsole myConsole = findConsole(CONSOLE);
-		myConsole.clearConsole();
-	}
-	
 	public void printErrorMessage(String errorMessage) {
 		MessageConsole myConsole = findConsole(CONSOLE);
 		MessageConsoleStream out = myConsole.newMessageStream();
@@ -131,7 +126,7 @@ public class ConsoleService {
 			IConsole myConsole = findConsole(CONSOLE);
 			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 			String id = IConsoleConstants.ID_CONSOLE_VIEW;
-			IConsoleView view = (IConsoleView) page.showView(id);
+			IConsoleView view = (IConsoleView) page.showView(id, null, IWorkbenchPage.VIEW_VISIBLE);
 			view.display(myConsole);
 		} 
 		catch (PartInitException pie) {

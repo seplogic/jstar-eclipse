@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="lib/commons-io-1.4/commons-io-1.4.jar"/>
 	<classpathentry kind="lib" path="jar files/processing/jstar_processing.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="lib" path="C:/Program Files (x86)/Java/jdk1.6.0_20/lib/tools.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
