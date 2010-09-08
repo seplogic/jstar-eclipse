@@ -10,14 +10,9 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
-import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.IConsoleManager;
-import org.eclipse.ui.console.IConsoleView;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.json.JSONException;
@@ -31,7 +26,9 @@ public class ConsoleService {
 
 	private static ConsoleService instance;
 
-	private static final String CONSOLE = "Console";
+	private static final String CONSOLE = "jStar";
+	
+	private MessageConsole console;
 
 	private ConsoleService() {
 	}
@@ -44,7 +41,7 @@ public class ConsoleService {
 	}
 	
 	public PrintStream getConsoleStream() {
-		MessageConsole myConsole = findConsole(CONSOLE);
+		MessageConsole myConsole = getConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
 		out.setColor(new Color(null, Colour.RED.getRGB()));
 		return new PrintStream(out);
@@ -58,7 +55,7 @@ public class ConsoleService {
 	}
 	
 	public void printErrorMessage(String errorMessage) {
-		MessageConsole myConsole = findConsole(CONSOLE);
+		MessageConsole myConsole = getConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
 		out.setColor(new Color(null, Colour.RED.getRGB()));
 		out.println("An error occurred: " + errorMessage);
@@ -66,7 +63,7 @@ public class ConsoleService {
 	}
 	
 	public void printToConsole(JavaFile selectedFile, Process pr) throws IOException, JSONException, InterruptedException, CoreException {
-		MessageConsole myConsole = findConsole(CONSOLE);
+		MessageConsole myConsole = getConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
 		List<VerificationError> errors = new LinkedList<VerificationError>();
 		
@@ -106,6 +103,13 @@ public class ConsoleService {
 		showConsole();
 	}
 	
+	public MessageConsole getConsole() {
+		if (console == null) {
+    		console = findConsole(CONSOLE);
+    	}
+		return console;
+	}
+	
 	private MessageConsole findConsole(String name) {
 		ConsolePlugin plugin = ConsolePlugin.getDefault();
 		IConsoleManager conMan = plugin.getConsoleManager();
@@ -122,20 +126,9 @@ public class ConsoleService {
 	}
 	
 	private void showConsole() {
-		try {
-			IConsole myConsole = findConsole(CONSOLE);
-			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-			String id = IConsoleConstants.ID_CONSOLE_VIEW;
-			IConsoleView view = (IConsoleView) page.showView(id, null, IWorkbenchPage.VIEW_VISIBLE);
-			view.display(myConsole);
-		} 
-		catch (PartInitException pie) {
-			pie.printStackTrace();
-		}
-		catch (NullPointerException npe) {
-			npe.printStackTrace();
-		}
-		
+		ConsolePlugin plugin = ConsolePlugin.getDefault();
+		IConsoleManager conMan = plugin.getConsoleManager();
+		conMan.showConsoleView(getConsole());
 	}
 
 	private class ColourIndexPair {

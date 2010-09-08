@@ -5,7 +5,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IExecutionListener;
 import org.eclipse.core.commands.NotHandledException;
 
-import com.jstar.eclipse.services.ConsoleService;
 import com.jstar.eclipse.services.Utils;
 import com.jstar.eclipse.services.VerificationService;
 

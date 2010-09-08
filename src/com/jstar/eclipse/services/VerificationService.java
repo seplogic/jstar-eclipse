@@ -1,12 +1,9 @@
 package com.jstar.eclipse.services;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorDescriptor;
@@ -14,10 +11,10 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
-import org.json.JSONException;
 
 import com.jstar.eclipse.dialogs.InputFileDialog;
 import com.jstar.eclipse.exceptions.ConfigurationException;
+import com.jstar.eclipse.jobs.VerificationJob;
 import com.jstar.eclipse.objects.JavaFilePersistentProperties;
 import com.jstar.eclipse.objects.JavaFile;
 import com.jstar.eclipse.services.JStar.PrintMode;
@@ -25,6 +22,8 @@ import com.jstar.eclipse.services.JStar.PrintMode;
 public class VerificationService {
 	
 	private static VerificationService instance;
+	
+	private Mutex rule;
 	
 	private VerificationService() {
 	}
@@ -36,7 +35,7 @@ public class VerificationService {
 		return instance;
 	}
 
-	public void verifyConfig(JavaFile selectedFile, Shell shell) {
+	public void verifyConfig(JavaFile selectedFile, Shell shell) {	
 		checkConfigurations();
 
 		final InputFileDialog dialog = new InputFileDialog(shell, selectedFile);
@@ -45,8 +44,7 @@ public class VerificationService {
 		final int returnValue = dialog.open();
 		
 		if (returnValue == IDialogConstants.OK_ID) {
-			final List<File> jimpleFiles = JStar.getInstance().convertToJimple(selectedFile);
-			executeJStar(selectedFile, !dialog.isSeparateSpec(), dialog.getSpecFieldValue(), dialog.getLogicFieldValue(), dialog.getAbsFieldValue(), jimpleFiles, dialog.getPrintMode());
+			executeJStar(selectedFile, !dialog.isSeparateSpec(), dialog.getSpecFieldValue(), dialog.getLogicFieldValue(), dialog.getAbsFieldValue(), dialog.getPrintMode());
 		}
 	}
 	
@@ -67,44 +65,20 @@ public class VerificationService {
 		String logicFile = JavaFilePersistentProperties.getLogicFile(selectedFile);
 		String absFile = JavaFilePersistentProperties.getAbsFile(selectedFile);
 		PrintMode mode = JavaFilePersistentProperties.getMode(selectedFile);
-		final List<File> jimpleFiles = JStar.getInstance().convertToJimple(selectedFile);
 		
 		if ((StringUtils.isEmpty(specFile) && !isSpecInSource) || logicFile.isEmpty() || absFile.isEmpty()) {
 			verifyConfig(selectedFile, shell);
 			return;
 		}
 		
-		executeJStar(selectedFile, isSpecInSource, specFile, logicFile, absFile, jimpleFiles, mode);
+		executeJStar(selectedFile, isSpecInSource, specFile, logicFile, absFile, mode);
 	}
 	
-	private void executeJStar(JavaFile selectedFile, boolean isSpecInSource, String specFile, String logicFile, String absFile, List<File> jimpleFiles, PrintMode mode) {
-		String spec;
-		
-		if (isSpecInSource) {
-			spec = AnnotationProcessingService.getInstance().processAnnotations(selectedFile).getAbsolutePath();
-		} 
-		else {
-			spec = specFile;
-		}
-		
-		try {		
-			selectedFile.clearMarkers();
-			
-			for (File jimpleFile : jimpleFiles) {
-				Process pr = JStar.getInstance().executeJStar(spec, logicFile, absFile, jimpleFile.getAbsolutePath(), mode);			
-				ConsoleService.getInstance().printToConsole(selectedFile, pr);
-			}
-			
-			ConsoleService.getInstance().printToConsole("jStar Verification is completed.");
-		} catch (CoreException ce) {
-			ce.printStackTrace(ConsoleService.getInstance().getConsoleStream());
-		} catch (IOException ioe) {
-			ioe.printStackTrace(ConsoleService.getInstance().getConsoleStream());
-		} catch (JSONException jsone) {
-			jsone.printStackTrace(ConsoleService.getInstance().getConsoleStream());
-		} catch (InterruptedException ie) {
-			ie.printStackTrace(ConsoleService.getInstance().getConsoleStream());
-		}
+	private void executeJStar(final JavaFile selectedFile, final boolean isSpecInSource, final String specFile, final String logicFile, final String absFile, final PrintMode mode) {
+		VerificationJob job = new VerificationJob("jStar Verification", selectedFile, isSpecInSource, specFile, logicFile, absFile, mode);
+		job.setPriority(Job.SHORT);
+		job.setRule(getRule());
+		job.schedule(); 
 	}
 	
 	public void openFileInEditor(final IFile selectedFile) {
@@ -116,6 +90,23 @@ public class VerificationService {
 		} 
 		catch (PartInitException pie) {
 			pie.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+		}
+	}
+	
+	private Mutex getRule() {
+		if (rule == null) {
+			rule = new Mutex();
+		}
+		
+		return rule;
+	}
+	
+	public class Mutex implements ISchedulingRule {
+		public boolean isConflicting(ISchedulingRule rule) {
+			return rule == this;
+		}
+		public boolean contains(ISchedulingRule rule) {
+			return rule == this;
 		}
 	}
 

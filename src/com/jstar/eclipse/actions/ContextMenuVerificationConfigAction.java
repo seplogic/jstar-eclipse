@@ -8,7 +8,6 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
 import com.jstar.eclipse.objects.JavaFile;
-import com.jstar.eclipse.services.ConsoleService;
 import com.jstar.eclipse.services.VerificationService;
 
 public class ContextMenuVerificationConfigAction implements IObjectActionDelegate {
