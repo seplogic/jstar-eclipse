@@ -1,7 +1,12 @@
 package com.jstar.eclipse.preferences;
 
 import org.apache.commons.lang.SystemUtils;
-import org.eclipse.jface.preference.*;
+import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.DirectoryFieldEditor;
+import org.eclipse.jface.preference.FieldEditor;
+import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.FileFieldEditor;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbench;
 
@@ -28,10 +33,29 @@ public class Configuration
 		}
 		
 		addField(new FileFieldEditor(PreferenceConstants.SOOT_CLASSPATH_RT, "&rt.jar:", getFieldEditorParent()));
+		addField(new BooleanFieldEditor(PreferenceConstants.VERIFY_AFTER_SAVING, "Verify after saving the file", getFieldEditorParent()));
 	}
 
 
 	public void init(IWorkbench workbench) {
+	}	
+	
+	public void propertyChange(PropertyChangeEvent event) {
+        super.propertyChange(event);
+        if (event.getProperty().equals(FieldEditor.VALUE)) {
+        	Object source = event.getSource();
+        	if (source instanceof BooleanFieldEditor) {
+        		if (((BooleanFieldEditor) source).getPreferenceName().equals(PreferenceConstants.VERIFY_AFTER_SAVING)) {
+        			if (event.getNewValue().equals(Boolean.TRUE)) {
+        				Activator.getDefault().addSaveListener();
+        			}
+        			else {
+        				Activator.getDefault().removeSaveListener();
+        			}
+        		}
+        	}
+        	source.toString();
+        }        
 	}
 	
 }

@@ -21,6 +21,8 @@ public class PreferenceConstants {
 	
 	public static final String SOOT_CLASSPATH_RT = "sootClasspathRtPreference";	
 	
+	public final static String VERIFY_AFTER_SAVING = "verifyAfterSavingPreference";
+	
 	public final static String JSTAR_LOGIC_LIBRARY = "JSTAR_LOGIC_LIBRARY";
 	
 	public final static String JSTAR_ABS_LIBRARY = "JSTAR_ABS_LIBRARY";
@@ -49,6 +51,10 @@ public class PreferenceConstants {
 	
 	public static String getSootClassPathRt() {
 		return getStore().getString(PreferenceConstants.SOOT_CLASSPATH_RT);
+	}
+	
+	public static boolean verifyAfterSaving() {
+		return getStore().getBoolean(PreferenceConstants.VERIFY_AFTER_SAVING);
 	}
 	
 	private static IPreferenceStore getStore() {

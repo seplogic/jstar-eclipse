@@ -6,6 +6,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 import com.jstar.eclipse.listeners.SaveListener;
+import com.jstar.eclipse.preferences.PreferenceConstants;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -27,12 +28,13 @@ public class Activator extends AbstractUIPlugin {
 		super.start(context);
 		plugin = this;
 		
-		saveListener = new SaveListener();
-		getCommandService().addExecutionListener(saveListener);	
+		if (PreferenceConstants.verifyAfterSaving()) {
+			addSaveListener();
+		}
 	}
 
 	public void stop(BundleContext context) throws Exception {
-		getCommandService().removeExecutionListener(saveListener);
+		removeSaveListener();
 		
 		plugin = null;
 		super.stop(context);
@@ -44,6 +46,20 @@ public class Activator extends AbstractUIPlugin {
 	
 	private ICommandService getCommandService() {
 		return (ICommandService) getDefault().getWorkbench().getService(ICommandService.class);
+	}
+	
+	public void addSaveListener() {
+		if (saveListener == null) {
+			saveListener = new SaveListener();
+			getCommandService().addExecutionListener(saveListener);	
+		}
+	}
+	
+	public void removeSaveListener() {
+		if (saveListener != null) {
+			getCommandService().removeExecutionListener(saveListener);
+			saveListener = null;
+		}
 	}
 
 }
