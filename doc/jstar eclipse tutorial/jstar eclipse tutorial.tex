@@ -5,6 +5,7 @@
 \usepackage{array}
 \usepackage{longtable}
 \usepackage{comment} 
+\usepackage{hyperref}
 
 \begin{document}
 
@@ -16,11 +17,25 @@
 
 Prerequisites:
 \begin{itemize}
-   \item JDK 6 (not JRE since it does not have a compiler needed for annotation processing)
+   \item JDK 6 (not JRE since it does not have a compiler needed for annotation processing). You can specify it in eclipse.ini:\\\\
+Windows Example\\
+-vm\\
+C:\textbackslash Java\textbackslash JDK\textbackslash 1.6\textbackslash bin\textbackslash javaw.exe\\
+
+Linux Example\\
+-vm\\
+/opt/sun-jdk-1.6.0.02/bin/java\\
+
+Mac Example\\
+-vm\\
+/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home/bin/java\\
+
+For more information go to \href{http://wiki.eclipse.org/Eclipse.ini}{http://wiki.eclipse.org/Eclipse.ini}
+
 \end{itemize}
 Two ways:
 \begin{enumerate}
-\item Add the jar file com.jstar.eclipse\_1.0.0.jar to \texttt{eclipse/dropins/} folder and restart Eclipse.
+\item Add the jar file \textbf{jar\_files/plugins/com.jstar.eclipse\_1.0.0.x.jar} to \texttt{eclipse/dropins/} folder and restart Eclipse.
 \item {\color{red} Need to create an update site.}
 \end{enumerate}
 

@@ -34,6 +34,11 @@ public class AnnotationProcessingService {
 		
 		final JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
 		
+		if (javac == null) {
+			ConsoleService.getInstance().printErrorMessage("Cannot find java compiler. Please check if you are using JDK and not JRE.");
+			throw new NullPointerException();
+		}
+		
 		final String generated = selectedFile.makeGeneratedDir();
 		
 		
