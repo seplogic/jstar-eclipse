@@ -1,5 +1,6 @@
 package com.jstar.eclipse.objects;
 
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -17,7 +18,7 @@ public class VerificationError {
 	
 	private String error_message;
 	
-	public VerificationError(JSONObject json) throws JSONException {
+	public VerificationError(final JSONObject json, final String counterExample) throws JSONException {
 		JSONObject error_pos = json.getJSONObject("error_pos");
 		startLine = error_pos.getInt("sline");
 		endLine = error_pos.getInt("eline");
@@ -25,6 +26,9 @@ public class VerificationError {
 		endPos = error_pos.getInt("epos");
 		error_message = json.getString("error_text");
 		
+		if (StringUtils.isNotEmpty(counterExample)) {
+			error_message += "\n" + counterExample;
+		}
 	}
 
 	public void setStartLine(int startLine) {
@@ -66,7 +70,4 @@ public class VerificationError {
 	public String getError_message() {
 		return error_message;
 	}
-	
-	
-
 }

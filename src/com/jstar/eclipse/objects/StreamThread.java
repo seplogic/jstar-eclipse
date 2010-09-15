@@ -14,6 +14,8 @@ import com.jstar.eclipse.services.ConsoleService;
 
 public class StreamThread extends Thread {
 	private static final String JSTAR_LINE_PREFIX = "json";	
+	private static final String JSTAR_COUNTER_EXAMPLE_BEGIN = "json_counter_example_begin";	
+	private static final String JSTAR_COUNTER_EXAMPLE_END = "json_counter_example_end";	
 	private InputStream inputStream;
 	private List<VerificationError> errors;
 	private MessageConsoleStream out;
@@ -30,10 +32,28 @@ public class StreamThread extends Thread {
 			final BufferedReader input = new BufferedReader(inputStreamReader);
 			String line = null;
 			
-			while ((line = input.readLine()) != null) {
+			final StringBuilder counterExample = new StringBuilder();
+			boolean addToCounterExample = false;
+			
+			while ((line = input.readLine()) != null) {				
+				if (line.startsWith(JSTAR_COUNTER_EXAMPLE_BEGIN)) {
+					addToCounterExample = true;
+					counterExample.delete(0, counterExample.length());
+					continue;
+				} 
+				
+				if (line.startsWith(JSTAR_COUNTER_EXAMPLE_END)) {
+					addToCounterExample = false;
+					continue;
+				}
+				
+				if (addToCounterExample) {
+					counterExample.append("\n").append(line);
+				}
+				
 				if (line.startsWith(JSTAR_LINE_PREFIX)) {
-					errors.add(new VerificationError(new JSONObject(line.substring(5))));
-					System.out.println(line);
+					errors.add(new VerificationError(new JSONObject(line.substring(5)), counterExample.toString()));
+					counterExample.delete(0, counterExample.length());
 				} 
 				else {
 					out = ConsoleService.getInstance().printLine(line, out);
