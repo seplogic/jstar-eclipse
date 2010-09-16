@@ -12,11 +12,11 @@ import org.eclipse.ui.IWorkbench;
 
 import com.jstar.eclipse.Activator;
 
-public class Configuration
+public class JStarPreferencePage
 	extends FieldEditorPreferencePage
 	implements IWorkbenchPreferencePage {
 
-	public Configuration() {
+	public JStarPreferencePage() {
 		super(GRID);
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
 	}
@@ -32,7 +32,14 @@ public class Configuration
 			addField(new DirectoryFieldEditor(PreferenceConstants.CYGWIN_PATH, "&cygwin path:", getFieldEditorParent()));
 		}
 		
-		addField(new FileFieldEditor(PreferenceConstants.SOOT_CLASSPATH_RT, "&rt.jar:", getFieldEditorParent()));
+		if (SystemUtils.IS_OS_MAC) {
+			addField(new FileFieldEditor(PreferenceConstants.SOOT_CLASSPATH_CLASSES, "&classes.jar:", getFieldEditorParent()));
+			addField(new FileFieldEditor(PreferenceConstants.SOOT_CLASSPATH_UI, "&ui.jar:", getFieldEditorParent()));
+		}
+		else {
+			addField(new FileFieldEditor(PreferenceConstants.SOOT_CLASSPATH_RT, "&rt.jar:", getFieldEditorParent()));
+		}
+		
 		addField(new BooleanFieldEditor(PreferenceConstants.VERIFY_AFTER_SAVING, "Verify after saving the file", getFieldEditorParent()));
 	}
 

@@ -57,7 +57,7 @@ public class JStar {
 		final String sootOutput = fileDirectory + File.separator + SootOutput + File.separator + javaFile;
 		
 		final String[] args = {
-				"-cp", PreferenceConstants.getSootClassPathRt() + File.pathSeparator + fileToConvert.getProjectClasspath(),
+				"-cp", PreferenceConstants.getSootClassPath() + File.pathSeparator + fileToConvert.getProjectClasspath(),
 				"-f", "J", 
 				"-output-dir", sootOutput, 
 				"-src-prec", "java",
@@ -114,7 +114,7 @@ public class JStar {
 	}
 	
 	private String getErrorMessage(final String unspecifiedConfig) {
-		return "The location of " + unspecifiedConfig + " is not specified. Go to Window -> Preferences -> jStar Configuration to specify it."; 
+		return "The location of " + unspecifiedConfig + " is not specified. Go to Window -> Preferences -> jStar to specify it."; 
 	}
 	
 	public void checkConfigurations() throws ConfigurationException {		
@@ -134,8 +134,19 @@ public class JStar {
 			throw new ConfigurationException(getErrorMessage("jStar specification library"));
 		}
 		
-		if (StringUtils.isEmpty(PreferenceConstants.getSootClassPathRt())) {
-			throw new ConfigurationException(getErrorMessage("rt.jar file in JAVA jre"));
+		if (SystemUtils.IS_OS_MAC) {
+			if (StringUtils.isEmpty(PreferenceConstants.getSootClassPathClasses())) {
+				throw new ConfigurationException(getErrorMessage("classes.jar file in JAVA jre"));
+			}
+			
+			if (StringUtils.isEmpty(PreferenceConstants.getSootClassPathUi())) {
+				throw new ConfigurationException(getErrorMessage("ui.jar file in JAVA jre"));
+			}
+		}
+		else {
+			if (StringUtils.isEmpty(PreferenceConstants.getSootClassPathRt())) {
+				throw new ConfigurationException(getErrorMessage("rt.jar file in JAVA jre"));
+			}
 		}
 	}
 

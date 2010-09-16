@@ -41,11 +41,19 @@ Two ways:
 
 \section{Configuration}
 
-On Windows with cygwin:
+\subsection{Windows with cygwin}
 
-Go to Windows $\rightarrow$ Preferences $\rightarrow$ jStar Configuration and set the required directories.\\
+Go to Windows $\rightarrow$ Preferences $\rightarrow$ jStar and set the required directories.\\
 
-\includegraphics[width=4in]{images/preferences.jpg}
+\includegraphics[width=4in]{images/preferences.jpg}\\
+
+rt.jar could be found in jdk1.6.0/jre/lib/. It is required library for soot. The plugin will try to find it automatically. 
+
+\subsection{Linux}
+rt.jar could be found in jdk1.6.0/jre/lib/. It is required library for soot. The plugin will try to find it automatically. 
+
+\subsection{Mac}
+classes.jar and ui.jar cound be found in \\ /System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Classes/.  They are required libraries for soot. The plugin will try to find them automatically. 
 
 \section{Verification}
 You can verify source file by selecting \texttt{Verify with jStar} from the context menu or the main toolbar. 

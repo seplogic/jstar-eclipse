@@ -1,5 +1,8 @@
 package com.jstar.eclipse.preferences;
 
+import java.io.File;
+
+import org.apache.commons.lang.SystemUtils;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import com.jstar.eclipse.Activator;
@@ -19,7 +22,11 @@ public class PreferenceConstants {
 	
 	public static final String CYGWIN_PATH = "cygwinPathPreference";
 	
-	public static final String SOOT_CLASSPATH_RT = "sootClasspathRtPreference";	
+	public static final String SOOT_CLASSPATH_RT = "sootClasspathRtPreference";
+	
+	public static final String SOOT_CLASSPATH_CLASSES = "sootClasspathClassesPreference";
+	
+	public static final String SOOT_CLASSPATH_UI = "sootClasspathUiPreference";
 	
 	public final static String VERIFY_AFTER_SAVING = "verifyAfterSavingPreference";
 	
@@ -51,6 +58,23 @@ public class PreferenceConstants {
 	
 	public static String getSootClassPathRt() {
 		return getStore().getString(PreferenceConstants.SOOT_CLASSPATH_RT);
+	}
+	
+	public static String getSootClassPathClasses() {
+		return getStore().getString(PreferenceConstants.SOOT_CLASSPATH_CLASSES);
+	}
+	
+	public static String getSootClassPathUi() {
+		return getStore().getString(PreferenceConstants.SOOT_CLASSPATH_UI);
+	}
+	
+	public static String getSootClassPath() {
+		if (SystemUtils.IS_OS_MAC) {
+			return getSootClassPathClasses() + File.pathSeparator + getSootClassPathUi();
+		}
+		else {
+			return getSootClassPathRt();
+		}
 	}
 	
 	public static boolean verifyAfterSaving() {

@@ -54,8 +54,8 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            class="com.jstar.eclipse.preferences.Configuration"
-            id="com.jstar.eclipse.preferences.Configuration"
+            class="com.jstar.eclipse.preferences.JStarPreferencePage"
+            id="com.jstar.eclipse.preferences.jStar"
             name="%page.name">
       </page>
    </extension>
