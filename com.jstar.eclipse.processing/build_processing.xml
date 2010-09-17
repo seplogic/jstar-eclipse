@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <project name="apt" default="jar" basedir=".">
     <property name="build" value="build_processing"/>
-    <property name="jar_files" value="jar files/processing"/>
-    <property name="annotations" value="jar files/annotations"/>
+    <property name="jar_file" value="jar file"/>
+    <property name="annotations" value="../com.jstar.eclipse.annotations/jar file"/>
     
     <path id="classpath">
         <fileset dir="${annotations}" includes="**/*.jar"/>
@@ -10,12 +10,12 @@
     
     <target name="clean">
 		<delete dir="${build}"/>
-		<delete dir="${jar_files}"/>
+		<delete dir="${jar_file}"/>
 	</target>
 	
 	<target name="init" depends="clean">
 		<mkdir dir="${build}"/>
-		<mkdir dir="${jar_files}"/>
+		<mkdir dir="${jar_file}"/>
 	</target>
   
     <target name="compile" depends="init">
@@ -23,6 +23,6 @@
     </target>
   
   <target name="jar" depends="compile">
-        <jar basedir="${build}" destfile="${jar_files}/jstar_processing.jar"/>
+        <jar basedir="${build}" destfile="${jar_file}/jstar_processing.jar"/>
   </target>
 </project>

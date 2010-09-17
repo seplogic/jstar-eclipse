@@ -99,7 +99,7 @@ public class SpecAnnotationProcessor extends AbstractProcessor {
 	}
 
 	private void generateSpecProcessor(Filer filer, AllAnnotations allAnnotations) throws IOException {			
-		   FileObject fileObject = filer.createResource(StandardLocation.CLASS_OUTPUT, "",  className + ".spec", null);
+		   FileObject fileObject = filer.createResource(StandardLocation.CLASS_OUTPUT, "",  className + ".spec");
 
 		   Writer writer = fileObject.openWriter();	   
 		   allAnnotations.generateFile(writer);

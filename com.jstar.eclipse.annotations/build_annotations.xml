@@ -1,16 +1,16 @@
 <?xml version="1.0" ?>
 <project name="annotations" default="jar" basedir=".">
     <property name="build" value="build_annotations"/>
-     <property name="jar_files" value="jar files/annotations"/>
+     <property name="jar_file" value="jar file"/>
     
     <target name="clean">
 		<delete dir="${build}"/>
-		<delete dir="${jar_files}"/>
+		<delete dir="${jar_file}"/>
 	</target>
 	
 	<target name="init" depends="clean">
 		<mkdir dir="${build}"/>
-		<mkdir dir="${jar_files}"/>
+		<mkdir dir="${jar_file}"/>
 	</target>
   
     <target name="compile" depends="init">
@@ -18,6 +18,6 @@
     </target>
   
   <target name="jar" depends="compile">
-        <jar basedir="${build}" destfile="${jar_files}/annotations.jar"/>
+        <jar basedir="${build}" destfile="${jar_file}/annotations.jar"/>
   </target>
 </project>
