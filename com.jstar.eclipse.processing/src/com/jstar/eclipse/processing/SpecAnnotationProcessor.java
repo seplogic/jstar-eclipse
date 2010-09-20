@@ -3,7 +3,6 @@ package com.jstar.eclipse.processing;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -32,8 +31,6 @@ import com.sun.source.util.Trees;
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 
 public class SpecAnnotationProcessor extends AbstractProcessor {
-	
-	private String className;
 
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations,
@@ -41,31 +38,17 @@ public class SpecAnnotationProcessor extends AbstractProcessor {
 		
 		Messager messager = processingEnv.getMessager();
 		
-		Set<? extends Element> elements = roundEnv.getRootElements();
-		
-		List<Element> classNames = new LinkedList<Element>();
-		for (Element element : elements) {
-			if (element.getKind().isClass() || element.getKind().isInterface()) {
-				System.out.println(element.getSimpleName().toString());
-				classNames.add(element);   
-			}
-		}
-		
-		AllAnnotations allAnnotations = new AllAnnotations(classNames);
+		AllAnnotations allAnnotations = new AllAnnotations();
 		
 		for (TypeElement typeElement : annotations){
-
-			for (Element element : roundEnv.getElementsAnnotatedWith(typeElement)) {
-				className = getSourceFile(element);				
-				allAnnotations.setFileName(className);
-				
+			for (Element element : roundEnv.getElementsAnnotatedWith(typeElement)) {				
 				processAnnotation(element, typeElement, allAnnotations, messager);			
 			}			
         }
 		
 		if (!allAnnotations.isEmpty()) {
 			try {
-				generateSpecProcessor(processingEnv.getFiler(), allAnnotations);
+				generateSpec(processingEnv.getFiler(), allAnnotations);
 			}
 			catch(Exception exc) {
 				messager.printMessage(Diagnostic.Kind.ERROR, exc.getMessage());
@@ -73,18 +56,6 @@ public class SpecAnnotationProcessor extends AbstractProcessor {
 		}
 		
         return true;
-	}
-
-	private String getSourceFile(Element element) { //Assuming we write only one file name 
-		if (className == null) {
-			Trees instance = Trees.instance(processingEnv);
-			TreePath path = instance.getPath(element);
-			
-			CompilationUnitTree cu = path.getCompilationUnit();
-			
-			return getFileName(cu.getSourceFile().getName()); 
-		}
-		return className;
 	}
 	
 	public String getFileName(final String name) {
@@ -98,14 +69,18 @@ public class SpecAnnotationProcessor extends AbstractProcessor {
 		return name.substring(separator, dot);
 	}
 
-	private void generateSpecProcessor(Filer filer, AllAnnotations allAnnotations) throws IOException {			
-		   FileObject fileObject = filer.createResource(StandardLocation.CLASS_OUTPUT, "",  className + ".spec");
+	private void generateSpec(Filer filer, AllAnnotations allAnnotations) throws IOException {		
+		final Set<String> sourceFileNames = allAnnotations.getSourceFileNames();
+		
+		for (final String sourceFileName : sourceFileNames) {		
+		   FileObject fileObject = filer.createResource(StandardLocation.CLASS_OUTPUT, "",  sourceFileName + ".spec");
 
 		   Writer writer = fileObject.openWriter();	   
-		   allAnnotations.generateFile(writer);
+		   allAnnotations.generateFile(sourceFileName, allAnnotations.getClasses(sourceFileName), writer);
      
 		   writer.flush();
 		   writer.close();
+		}
 		
 	}
 
@@ -127,19 +102,22 @@ public class SpecAnnotationProcessor extends AbstractProcessor {
 				CompilationUnitTree cu = path.getCompilationUnit();
 				Tree tree =  path.getLeaf();
 					
-				String elementClass;
+				Element elementClass;
+				
 				if (element.getKind().isClass() || element.getKind().isInterface()) {
-					elementClass = element.getSimpleName().toString();
+					elementClass = element;
 				}
 				else {
-					elementClass = element.getEnclosingElement().getSimpleName().toString();
+					elementClass = element.getEnclosingElement();
 				}
 				
 				int nameLenght = mirror.getAnnotationType().asElement().getSimpleName().length() + 1;
 				
 				System.out.println("Element:" + element.getSimpleName() + " Annotation: " + mirrorAnnotationType + " Positions: " + (sourcePositions.getStartPosition(cu, tree) + 1) + " " + (sourcePositions.getEndPosition(cu, tree) + nameLenght));
+				
+				final ClassInformation classInformation = new ClassInformation(elementClass, getFileName(cu.getSourceFile().getName()));
 						
-				allAnnotations.addAnnotation(element, mirror, sourcePositions.getStartPosition(cu, tree) + 1, sourcePositions.getEndPosition(cu, tree) + nameLenght, elementClass);
+				allAnnotations.addAnnotation(element, mirror, sourcePositions.getStartPosition(cu, tree) + 1, sourcePositions.getEndPosition(cu, tree) + nameLenght, classInformation);
 			}
 		}
 	}

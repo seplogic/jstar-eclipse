@@ -3,9 +3,11 @@ package com.jstar.eclipse.processing;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -33,18 +35,16 @@ import com.jstar.eclipse.processing.objects.SpecObject;
 import com.jstar.eclipse.processing.objects.SpecObjectList;
 
 public class AllAnnotations {
-	private Map<String, Map<Annotation, List<AnnotationObject>>> annotations;
-	private List<Element> classNames;
-	private String fileName;
+	private Map<ClassInformation, Map<Annotation, List<AnnotationObject>>> annotations;
 	
-	public AllAnnotations(final List<Element> classNames) {
-		annotations = new HashMap<String, Map<Annotation, List<AnnotationObject>>>();
-		this.classNames = classNames;
+	public AllAnnotations() {
+		annotations = new HashMap<ClassInformation, Map<Annotation, List<AnnotationObject>>>();
 	}
 
-	public void generateFile(Writer writer) throws IOException {
+	public void generateFile(String sourceFileName, Set<ClassInformation> classInfos, Writer writer) throws IOException {
 		System.out.println(annotations.toString());
-		Map<Annotation, List<AnnotationObject>> importObjectsMap = annotations.get("");
+		
+		Map<Annotation, List<AnnotationObject>> importObjectsMap = annotations.get(new ClassInformation(null, sourceFileName));
 		
 		if (importObjectsMap != null) {
 			List<AnnotationObject> importObjects = importObjectsMap.get(Annotation.Import); 
@@ -54,44 +54,46 @@ public class AllAnnotations {
 			}
 		}
 		
-		for (Element className : classNames) {
+		for (ClassInformation classInfo : classInfos) {
 			
-			Map<Annotation, List<AnnotationObject>> map = annotations.get(className.getSimpleName().toString());		
+			if (classInfo.getClassName() != null) {
 			
-			if (className.getKind().isClass() || className.getKind().isInterface()) {
-				addClassDeclaration(className, writer);
-				writer.write("\n");
-			}
-			else {
-				throw new RuntimeException("Unknown kind of element. Currently only class and interface are supported."); 
-			}
-			
-			if (map != null) {
-				if (map.get(Annotation.Predicate) != null) {
-					for (AnnotationObject predicate : map.get(Annotation.Predicate)) {
-						predicate.generateFile(writer);
-						writer.write("\n");
+				Map<Annotation, List<AnnotationObject>> map = annotations.get(classInfo);	
+				
+				if (classInfo.getClassName().getKind().isClass() || classInfo.getClassName().getKind().isInterface()) {
+					addClassDeclaration(classInfo.getClassName(), writer);
+					writer.write("\n");
+				}
+				else {
+					throw new RuntimeException("Unknown kind of element. Currently only class and interface are supported."); 
+				}
+				
+				if (map != null) {
+					if (map.get(Annotation.Predicate) != null) {
+						for (AnnotationObject predicate : map.get(Annotation.Predicate)) {
+							predicate.generateFile(writer);
+							writer.write("\n");
+						}
+					}
+					
+					if (map.get(Annotation.InitSpec) != null) {
+						for (AnnotationObject initSpec : map.get(Annotation.InitSpec)) {
+							initSpec.generateFile(writer);
+							writer.write("\n");
+						}
+					}
+					
+					if (map.get(Annotation.Spec) != null) {
+						for (AnnotationObject spec : map.get(Annotation.Spec)) {
+							spec.generateFile(writer);
+							writer.write("\n");
+						}
 					}
 				}
 				
-				if (map.get(Annotation.InitSpec) != null) {
-					for (AnnotationObject initSpec : map.get(Annotation.InitSpec)) {
-						initSpec.generateFile(writer);
-						writer.write("\n");
-					}
-				}
-				
-				if (map.get(Annotation.Spec) != null) {
-					for (AnnotationObject spec : map.get(Annotation.Spec)) {
-						spec.generateFile(writer);
-						writer.write("\n");
-					}
-				}
+				writer.write("}\n");
 			}
-			
-			writer.write("}\n");
 		}
-		
 	}
 
 
@@ -127,7 +129,7 @@ public class AllAnnotations {
 		return annotations.isEmpty();
 	}
 	
-	private void putAnnotation(String className, Annotation annotation, AnnotationObject annotationObject) {
+	private void putAnnotation(ClassInformation className, Annotation annotation, AnnotationObject annotationObject) {
 		Map<Annotation, List<AnnotationObject>> map;
 		
 		if (annotations.get(className) == null) {
@@ -178,23 +180,23 @@ public class AllAnnotations {
 		return methodDeclaration.toString();
 	}
 
-	public void addAnnotation(Element element, AnnotationMirror mirror, long startPos, long endPos, String elementClass) {	
+	public void addAnnotation(Element element, AnnotationMirror mirror, long startPos, long endPos, ClassInformation elementClass) {	
 		System.out.println(mirror.getAnnotationType().toString());
 		
 		if (Annotation.Import.getName().equals(mirror.getAnnotationType().toString())) {	
-			ImportObject annotationObject = new ImportObject(startPos, endPos, fileName);
+			ImportObject annotationObject = new ImportObject(startPos, endPos, elementClass.getSourceFileName());
 			Import importAnnotation = element.getAnnotation(Import.class);
 			for (String value : importAnnotation.value()) {
 				annotationObject.addSpecFile(value);
 			}	
 			
-			putAnnotation("", Annotation.Import, annotationObject);
+			putAnnotation(new ClassInformation(null, elementClass.getSourceFileName()), Annotation.Import, annotationObject);
 			return;
 		}
 		
 		if (Annotation.Spec.getName().equals(mirror.getAnnotationType().toString())) {	
 			Spec specAnnotation = element.getAnnotation(Spec.class);
-			SpecObject annotationObject = getSpecObject(specAnnotation, element, startPos, endPos);
+			SpecObject annotationObject = getSpecObject(specAnnotation, element, startPos, endPos, elementClass.getSourceFileName());
 			annotationObject.setMethodDeclaration(getMehodDeclaration(element));
 			putAnnotation(elementClass, Annotation.Spec, annotationObject);
 			return;
@@ -202,21 +204,21 @@ public class AllAnnotations {
 		
 		if (Annotation.SpecStatic.getName().equals(mirror.getAnnotationType().toString())) {	
 			SpecStatic specAnnotation = element.getAnnotation(SpecStatic.class);
-			SpecObject annotationObject = getSpecStaticObject(specAnnotation, element, startPos, endPos);
+			SpecObject annotationObject = getSpecStaticObject(specAnnotation, element, startPos, endPos, elementClass.getSourceFileName());
 			annotationObject.setMethodDeclaration(getMehodDeclaration(element));
 			putAnnotation(elementClass, Annotation.Spec, annotationObject);
 			return;
 		}
 		
 		if (Annotation.Specs.getName().equals(mirror.getAnnotationType().toString())) {	
-			SpecObjectList annotationObjectList = new SpecObjectList(startPos, endPos, fileName);
+			SpecObjectList annotationObjectList = new SpecObjectList(startPos, endPos, elementClass.getSourceFileName());
 			Specs specAnnotations = element.getAnnotation(Specs.class);
 			
 			final String methodDeclaration = getMehodDeclaration(element);
 			
 			if (specAnnotations.value().length > 0) {
 				for (Spec specAnnotation : specAnnotations.value()) {
-					SpecObject annotationObject = getSpecObject(specAnnotation, element, startPos, endPos);
+					SpecObject annotationObject = getSpecObject(specAnnotation, element, startPos, endPos, elementClass.getSourceFileName());
 					annotationObject.setMethodDeclaration(methodDeclaration);
 					annotationObjectList.addSpecObjects(annotationObject);
 				}
@@ -229,14 +231,14 @@ public class AllAnnotations {
 		}
 		
 		if (Annotation.SpecsStatic.getName().equals(mirror.getAnnotationType().toString())) {	
-			SpecObjectList annotationObjectList = new SpecObjectList(startPos, endPos, fileName);
+			SpecObjectList annotationObjectList = new SpecObjectList(startPos, endPos, elementClass.getSourceFileName());
 			SpecsStatic specAnnotations = element.getAnnotation(SpecsStatic.class);
 			
 			final String methodDeclaration = getMehodDeclaration(element);
 			
 			if (specAnnotations.value().length > 0) {
 				for (SpecStatic specAnnotation : specAnnotations.value()) {
-					SpecObject annotationObject = getSpecStaticObject(specAnnotation, element, startPos, endPos);
+					SpecObject annotationObject = getSpecStaticObject(specAnnotation, element, startPos, endPos, elementClass.getSourceFileName());
 					annotationObject.setMethodDeclaration(methodDeclaration);
 					annotationObjectList.addSpecObjects(annotationObject);
 				}
@@ -251,37 +253,37 @@ public class AllAnnotations {
 		
 		if (Annotation.Predicate.getName().equals(mirror.getAnnotationType().toString())) {	
 			Predicate predicate = element.getAnnotation(Predicate.class);		
-			putAnnotation(elementClass, Annotation.Predicate, getPredicateObject(predicate, startPos, endPos));
+			putAnnotation(elementClass, Annotation.Predicate, getPredicateObject(predicate, startPos, endPos, elementClass.getSourceFileName()));
 			return;
 		}
 		
 		if (Annotation.Predicates.getName().equals(mirror.getAnnotationType().toString())) {			
 			Predicates predicates = element.getAnnotation(Predicates.class);
 			for (Predicate predicate : predicates.value()) {
-				putAnnotation(elementClass, Annotation.Predicate, getPredicateObject(predicate, startPos, endPos));
+				putAnnotation(elementClass, Annotation.Predicate, getPredicateObject(predicate, startPos, endPos, elementClass.getSourceFileName()));
 			}		
 			return;
 		}
 		
 		if (Annotation.InitSpec.getName().equals(mirror.getAnnotationType().toString())) {			
 			InitSpec specAnnotation = element.getAnnotation(InitSpec.class);
-			putAnnotation(elementClass, Annotation.InitSpec, getInitSpecObject(specAnnotation, startPos, endPos));
+			putAnnotation(elementClass, Annotation.InitSpec, getInitSpecObject(specAnnotation, startPos, endPos, elementClass.getSourceFileName()));
 			return;
 		}
 		
 		if (Annotation.InitSpecStatic.getName().equals(mirror.getAnnotationType().toString())) {			
 			InitSpecStatic specAnnotation = element.getAnnotation(InitSpecStatic.class);
-			putAnnotation(elementClass, Annotation.InitSpec, getInitSpecStaticObject(specAnnotation, startPos, endPos));
+			putAnnotation(elementClass, Annotation.InitSpec, getInitSpecStaticObject(specAnnotation, startPos, endPos, elementClass.getSourceFileName()));
 			return;
 		}
 		
 		if (Annotation.InitSpecs.getName().equals(mirror.getAnnotationType().toString())) {	
-			SpecObjectList annotationObjectList = new SpecObjectList(startPos, endPos, fileName);
+			SpecObjectList annotationObjectList = new SpecObjectList(startPos, endPos, elementClass.getSourceFileName());
 			InitSpecs specAnnotations = element.getAnnotation(InitSpecs.class);
 			
 			if (specAnnotations.value().length > 0) {
 				for (InitSpec specAnnotation : specAnnotations.value()) {
-					SpecObject annotationObject = getInitSpecObject(specAnnotation, startPos, endPos);
+					SpecObject annotationObject = getInitSpecObject(specAnnotation, startPos, endPos, elementClass.getSourceFileName());
 					annotationObjectList.addSpecObjects(annotationObject);
 				}
 	
@@ -293,12 +295,12 @@ public class AllAnnotations {
 		}
 		
 		if (Annotation.InitSpecsStatic.getName().equals(mirror.getAnnotationType().toString())) {	
-			SpecObjectList annotationObjectList = new SpecObjectList(startPos, endPos, fileName);
+			SpecObjectList annotationObjectList = new SpecObjectList(startPos, endPos, elementClass.getSourceFileName());
 			InitSpecsStatic specAnnotations = element.getAnnotation(InitSpecsStatic.class);
 			
 			if (specAnnotations.value().length > 0) {
 				for (InitSpecStatic specAnnotation : specAnnotations.value()) {
-					SpecObject annotationObject = getInitSpecStaticObject(specAnnotation, startPos, endPos);
+					SpecObject annotationObject = getInitSpecStaticObject(specAnnotation, startPos, endPos, elementClass.getSourceFileName());
 					annotationObjectList.addSpecObjects(annotationObject);
 				}
 	
@@ -311,8 +313,8 @@ public class AllAnnotations {
 		}
 	}
 	
-	private SpecObject getInitSpecObject(InitSpec specAnnotation, long startPos, long endPos) {
-		SpecObject annotationObject = new SpecObject(startPos, endPos, fileName);
+	private SpecObject getInitSpecObject(InitSpec specAnnotation, long startPos, long endPos, String sourceFileName) {
+		SpecObject annotationObject = new SpecObject(startPos, endPos, sourceFileName);
 		annotationObject.setPre(specAnnotation.pre());
 		annotationObject.setPost(specAnnotation.post());
 		annotationObject.setMethodDeclaration("void <init>()");
@@ -320,8 +322,8 @@ public class AllAnnotations {
 		return annotationObject;
 	}
 	
-	private SpecObject getInitSpecStaticObject(InitSpecStatic specAnnotation, long startPos, long endPos) {
-		SpecObject annotationObject = new SpecObject(startPos, endPos, fileName);
+	private SpecObject getInitSpecStaticObject(InitSpecStatic specAnnotation, long startPos, long endPos, String sourceFileName) {
+		SpecObject annotationObject = new SpecObject(startPos, endPos, sourceFileName);
 		annotationObject.setPre(specAnnotation.pre());
 		annotationObject.setPost(specAnnotation.post());
 		annotationObject.setStat(true);
@@ -330,8 +332,8 @@ public class AllAnnotations {
 		return annotationObject;
 	}
 	
-	private PredicateObject getPredicateObject(Predicate predicate, long startPos, long endPos) {
-		PredicateObject annotationObject = new PredicateObject(startPos, endPos, fileName);
+	private PredicateObject getPredicateObject(Predicate predicate, long startPos, long endPos, String sourceFileName) {
+		PredicateObject annotationObject = new PredicateObject(startPos, endPos, sourceFileName);
 		annotationObject.setFormula(predicate.formula());
 		annotationObject.setPredicate(predicate.predicate());
 		annotationObject.setType(predicate.type());
@@ -339,16 +341,16 @@ public class AllAnnotations {
 		return annotationObject;
 	}
 	
-	private SpecObject getSpecObject(Spec specAnnotation, Element element, long startPos, long endPos) {
-		SpecObject annotationObject = new SpecObject(startPos, endPos, fileName);
+	private SpecObject getSpecObject(Spec specAnnotation, Element element, long startPos, long endPos, String sourceFileName) {
+		SpecObject annotationObject = new SpecObject(startPos, endPos, sourceFileName);
 		annotationObject.setPre(specAnnotation.pre());
 		annotationObject.setPost(specAnnotation.post());					
 		
 		return annotationObject;
 	}
 	
-	private SpecObject getSpecStaticObject(SpecStatic specAnnotation, Element element, long startPos, long endPos) {
-		SpecObject annotationObject = new SpecObject(startPos, endPos, fileName);
+	private SpecObject getSpecStaticObject(SpecStatic specAnnotation, Element element, long startPos, long endPos, String sourceFileName) {
+		SpecObject annotationObject = new SpecObject(startPos, endPos, sourceFileName);
 		annotationObject.setPre(specAnnotation.pre());
 		annotationObject.setPost(specAnnotation.post());					
 		annotationObject.setMethodDeclaration(getMehodDeclaration(element));
@@ -357,12 +359,27 @@ public class AllAnnotations {
 		return annotationObject;
 	}
 
-	public void setFileName(String fileName) {
-		this.fileName = fileName;
+	
+	public Set<String> getSourceFileNames() {
+		Set<String> sourceFileNames = new HashSet<String>();
+		
+		for (final ClassInformation classInformation : annotations.keySet()) {
+			sourceFileNames.add(classInformation.getSourceFileName());
+		}
+		
+		return sourceFileNames;
 	}
 
-	public String getFileName() {
-		return fileName;
+	public Set<ClassInformation> getClasses(final String sourceFileName) {
+		Set<ClassInformation> sourceFileNames = new HashSet<ClassInformation>();
+		
+		for (final ClassInformation classInformation : annotations.keySet()) {
+			if (classInformation.getSourceFileName().equals(sourceFileName)) {
+				sourceFileNames.add(classInformation);
+			}
+		}
+		
+		return sourceFileNames;
 	}
 	
 }

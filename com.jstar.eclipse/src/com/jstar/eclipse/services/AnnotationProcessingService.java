@@ -42,7 +42,7 @@ public class AnnotationProcessingService {
 		final String generated = selectedFile.makeGeneratedDir();
 		
 		
-		final URL processorURL = FileLocator.find(Activator.getDefault().getBundle(), new Path("jar files" + File.separator + "processing" + File.separator + "jstar_processing.jar"), null);
+		final URL processorURL = FileLocator.find(Activator.getDefault().getBundle(), new Path("lib" + File.separator + "jstar_processing.jar"), null);
 		String processorLocation = "";
 		try {
 			processorLocation = FileLocator.toFileURL(processorURL).getFile();
