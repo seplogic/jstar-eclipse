@@ -42,21 +42,34 @@ public class AnnotationProcessingService {
 		final String generated = selectedFile.makeGeneratedDir();
 		
 		
-		final URL processorURL = FileLocator.find(Activator.getDefault().getBundle(), new Path("lib" + File.separator + "jstar_processing.jar"), null);
+		final URL processorURL = FileLocator.find(Activator.getDefault().getBundle(), new Path(Activator.PROCESSOR_PATH), null);
+		final URL requiredLib = FileLocator.find(Activator.getDefault().getBundle(), new Path(Activator.COMMONS_IO_1_4_PATH), null);
 		String processorLocation = "";
+		
 		try {
 			processorLocation = FileLocator.toFileURL(processorURL).getFile();
-		} catch (IOException ioe) {
-			ConsoleService.getInstance().printErrorMessage("Cannot obtain the location of annotation processing.");
+		} 
+		catch (IOException ioe) {
+			ConsoleService.getInstance().printErrorMessage("Cannot obtain the location of annotation processor.");
 			ioe.printStackTrace(ConsoleService.getInstance().getConsoleStream());
 			throw new RuntimeException();
 		}
 		
+		String requiredLibLocation = "";
+		
+		try {
+			requiredLibLocation = FileLocator.toFileURL(requiredLib).getFile();
+		} 
+		catch (IOException ioe) {
+			ConsoleService.getInstance().printErrorMessage("Cannot obtain the location of required libraries for annotation processor.");
+			ioe.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+			throw new RuntimeException();
+		}
 				
 		String[] arguments = {
 				"-proc:only", 
 				"-d", generated, 
-				"-cp", selectedFile.getProjectClasspath() + File.pathSeparator + processorLocation,
+				"-cp", selectedFile.getProjectClasspath() + File.pathSeparator + processorLocation + File.pathSeparator + requiredLibLocation,
 				"-processor", PROCESSOR,
 				selectedFile.getAbsolutePath()
 		};

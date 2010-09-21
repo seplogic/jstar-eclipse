@@ -1,5 +1,7 @@
 package com.jstar.eclipse;
 
+import java.io.File;
+
 import org.eclipse.core.commands.IExecutionListener;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -14,6 +16,8 @@ import com.jstar.eclipse.preferences.PreferenceConstants;
 public class Activator extends AbstractUIPlugin {
 
 	public static final String PLUGIN_ID = "com.jstar.eclipse";
+	public static final String PROCESSOR_PATH = "lib" + File.separator + "jstar_processing.jar";
+	public static final String COMMONS_IO_1_4_PATH = "lib" + File.separator + "commons-io-1.4" + File.separator + "commons-io-1.4.jar";
 
 	private static Activator plugin;
 	private IExecutionListener saveListener;

@@ -1,11 +1,14 @@
 <?xml version="1.0" ?>
-<project name="apt" default="jar" basedir=".">
+<project name="processing" default="copy_to_plugin" basedir=".">
     <property name="build" value="build_processing"/>
     <property name="jar_file" value="jar file"/>
     <property name="annotations" value="../com.jstar.eclipse.annotations/jar file"/>
+	<property name="lib" value="lib"/>
+	<property name="eclipse_plugin" value="../com.jstar.eclipse/lib/"/>
     
     <path id="classpath">
         <fileset dir="${annotations}" includes="**/*.jar"/>
+    	<fileset dir="${lib}" includes="**/*.jar"/>
     </path>
     
     <target name="clean">
@@ -25,4 +28,8 @@
   <target name="jar" depends="compile">
         <jar basedir="${build}" destfile="${jar_file}/jstar_processing.jar"/>
   </target>
+	
+	<target name="copy_to_plugin" depends="jar">
+		<copy file="${jar_file}/jstar_processing.jar" todir="${eclipse_plugin}"/>
+	</target>
 </project>
