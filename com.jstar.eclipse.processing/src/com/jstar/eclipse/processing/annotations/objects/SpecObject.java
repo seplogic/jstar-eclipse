@@ -1,4 +1,4 @@
-package com.jstar.eclipse.processing.objects;
+package com.jstar.eclipse.processing.annotations.objects;
 
 import java.io.IOException;
 import java.io.Writer;

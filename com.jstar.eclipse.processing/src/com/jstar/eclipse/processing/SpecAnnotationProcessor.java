@@ -1,6 +1,5 @@
 package com.jstar.eclipse.processing;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
@@ -20,6 +19,8 @@ import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
+import com.jstar.eclipse.processing.annotations.AllAnnotations;
+import com.jstar.eclipse.processing.annotations.FileAnnotations;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.SourcePositions;
@@ -57,26 +58,13 @@ public class SpecAnnotationProcessor extends AbstractProcessor {
 		
         return true;
 	}
-	
-	public String getFileName(final String name) {
-		int separator = name.lastIndexOf(File.separator);
-		
-		if (separator == -1) {
-			separator = 0;
-		}
-		
-		int dot = name.lastIndexOf('.');
-		return name.substring(separator, dot);
-	}
 
 	private void generateSpec(Filer filer, AllAnnotations allAnnotations) throws IOException {		
-		final Set<String> sourceFileNames = allAnnotations.getSourceFileNames();
-		
-		for (final String sourceFileName : sourceFileNames) {		
-		   FileObject fileObject = filer.createResource(StandardLocation.CLASS_OUTPUT, "",  sourceFileName + ".spec");
+		for (final FileAnnotations fileAnnotations : allAnnotations.getFileAnnotations()) {		
+		   FileObject fileObject = filer.createResource(StandardLocation.CLASS_OUTPUT, "",  fileAnnotations.getBaseSourceFileName() + ".spec");
 
 		   Writer writer = fileObject.openWriter();	   
-		   allAnnotations.generateFile(sourceFileName, allAnnotations.getClasses(sourceFileName), writer);
+		   AnnotationGeneratorService.getInstance().generateFile(fileAnnotations, writer);
      
 		   writer.flush();
 		   writer.close();
@@ -90,7 +78,6 @@ public class SpecAnnotationProcessor extends AbstractProcessor {
 		List<? extends AnnotationMirror> annotations = element.getAnnotationMirrors();
 
 		for (AnnotationMirror mirror : annotations) {
-			System.out.println(mirror.getAnnotationType().toString());
 			final String mirrorAnnotationType = mirror.getAnnotationType().toString();
 			
 			if (typeElement.toString().equals(mirrorAnnotationType)) {
@@ -112,12 +99,8 @@ public class SpecAnnotationProcessor extends AbstractProcessor {
 				}
 				
 				int nameLenght = mirror.getAnnotationType().asElement().getSimpleName().length() + 1;
-				
-				System.out.println("Element:" + element.getSimpleName() + " Annotation: " + mirrorAnnotationType + " Positions: " + (sourcePositions.getStartPosition(cu, tree) + 1) + " " + (sourcePositions.getEndPosition(cu, tree) + nameLenght));
-				
-				final ClassInformation classInformation = new ClassInformation(elementClass, getFileName(cu.getSourceFile().getName()));
-						
-				allAnnotations.addAnnotation(element, mirror, sourcePositions.getStartPosition(cu, tree) + 1, sourcePositions.getEndPosition(cu, tree) + nameLenght, classInformation);
+														
+				allAnnotations.addAnnotation(cu.getSourceFile().toUri().getPath(), elementClass, element, mirror, sourcePositions.getStartPosition(cu, tree) + 1, sourcePositions.getEndPosition(cu, tree) + nameLenght);
 			}
 		}
 	}

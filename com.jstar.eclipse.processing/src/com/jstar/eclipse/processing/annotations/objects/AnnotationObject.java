@@ -1,4 +1,4 @@
-package com.jstar.eclipse.processing.objects;
+package com.jstar.eclipse.processing.annotations.objects;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -32,7 +32,7 @@ public abstract class AnnotationObject {
 	abstract public void generateFile(Writer writer) throws IOException;
 
 	protected void appendPosition(Writer writer) throws IOException {
-		writer.write(new StringBuilder("   /*Source Line Pos Tag: sline: 0 eline: 0 spos: ")
+		writer.write(new StringBuilder("      /*Source Line Pos Tag: sline: 0 eline: 0 spos: ")
 		.append(startPos).append(" epos: ").append(endPos).append(" file: ").append(fileName).append(".java*/\n").toString());
 	}
 }

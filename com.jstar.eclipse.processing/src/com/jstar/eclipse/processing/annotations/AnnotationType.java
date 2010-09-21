@@ -1,6 +1,6 @@
-package com.jstar.eclipse.processing;
+package com.jstar.eclipse.processing.annotations;
 
-public enum Annotation {
+public enum AnnotationType {
 	Import ("com.jstar.eclipse.annotations.Import"),
 	Specs ("com.jstar.eclipse.annotations.Specs"),
 	Spec ("com.jstar.eclipse.annotations.Spec"),
@@ -15,7 +15,7 @@ public enum Annotation {
 	
 	private String name;
 	
-	Annotation(String name) {
+	AnnotationType(String name) {
 		this.name = name;
 	}
 	
