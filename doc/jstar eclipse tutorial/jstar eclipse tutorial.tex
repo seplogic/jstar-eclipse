@@ -35,7 +35,7 @@ For more information go to \href{http://wiki.eclipse.org/Eclipse.ini}{http://wik
 \end{itemize}
 Two ways:
 \begin{enumerate}
-\item Add the jar file \textbf{jar\_files/plugins/com.jstar.eclipse\_1.0.0.x.jar} to \texttt{eclipse/dropins/} folder and restart Eclipse.
+\item Add the jar file \textbf{plugin\_jar/com.jstar.eclipse\_1.0.0.x.jar} to \texttt{eclipse/dropins/} folder and restart Eclipse.
 \item {\color{red} Need to create an update site.}
 \end{enumerate}
 
@@ -64,7 +64,18 @@ By selecting \texttt{Verify with jStar Configurations...}, you can indicate the 
 
 \subsection*{Specification in source file}
 
-If you want to write specification in the source file, you need to add annotations.jar (can be found in com.jstar.eclipse/jar files/annotations) to your project Java Build Path.
+If you want to write specification in the source file, you need to add annotations.jar (can be found in com.jstar.eclipse/jar files/annotations) to your project Java Build Path. More information about annotations could be found in \ref{sec:annotationprocessing} .
+
+\subsection* {Verification errors}
+
+In case there are some verification errors, you can see error messages in console. The lines in source code where the problem appeared are annotated as squiggly marks.\\
+
+\includegraphics[width=4in]{images/console.jpg}\\
+
+\includegraphics[width=2in]{images/marker.jpg}
+
+\section{Annotation Processing}
+\label{sec:annotationprocessing}
 
 \subsection*{Annotations}
 
@@ -290,14 +301,32 @@ void <init>() static :
 \end{verbatim}
 \end{longtable}
 
-\subsection* {Verification errors}
+\subsection*{Eclipse plugin}
 
-In case there are some verification errors, you can see error messages in console. The lines in source code where the problem appeared are annotated as squiggly marks.\\
+You can write specifications in your java source file. By selecting an option ``Specification is included in the source file" in verification configuration, the specification file will be generated from your annotations. This specification file will be used to verify your program.
 
-\includegraphics[width=4in]{images/console.jpg}\\
+\subsection*{Command line}
 
-\includegraphics[width=2in]{images/marker.jpg}
-
-
-
+You can generate a specification file from your java source file with annotations using command line:\\
+{\bf javac}\\
+\hspace*{20 pt}{\bf-proc:only} \\
+\hspace*{20 pt}{\bf -cp} ``.;jstar\_processing.jar;commons-io-1.4.jar;annotations.jar" \\
+\hspace*{20 pt}{\bf -d} . \\
+\hspace*{20 pt}{\bf -processor} com.jstar.eclipse.processing.SpecAnnotationProcessor \\
+\hspace*{20 pt}{\it MyClass.java}\\\\
+{\bf -proc:only }\\
+\hspace*{20pt} Only annotation processing is done, without any subsequent compilation.\\
+{\bf -cp}\\
+\hspace*{20pt} Specifies the classpath. As well as specifying the classpath to the classes MyClass is referencing to, you need to add the following jar files:
+\begin{itemize}
+\item jstar\_processing.jar \\ where the processor {\bf com.jstar.eclipse.processing.SpecAnnotationProcessor} lives in.
+\item commons-io-1.4.jar \\ required library for annotation processing.
+\item annotations.jar \\ where the specification annotations live in.
+\end{itemize}
+{\bf -d} \\ 
+\hspace*{20 pt}The destination directory for the specification file.\\
+{\bf -processor}\\
+\hspace*{20 pt}The name of annotation processor. \\
+{\it MyClass.java}\\
+\hspace*{20 pt} One or more source files with annotations.
 \end{document}
