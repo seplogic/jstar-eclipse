@@ -99,9 +99,6 @@ public class JStar {
 		
 		Map<String, String> env = pb.environment();
 		
-		String path = StringUtils.isEmpty(env.get("Path")) ? "" : env.get("Path");
-		env.put("Path", getCygwinPath() + path);
-		
 		env.put(PreferenceConstants.JSTAR_LOGIC_LIBRARY,
 				PreferenceConstants.getJStarLogicLibrary());
 		env.put(PreferenceConstants.JSTAR_ABS_LIBRARY,
@@ -117,11 +114,7 @@ public class JStar {
 		return "The location of " + unspecifiedConfig + " is not specified. Go to Window -> Preferences -> jStar to specify it."; 
 	}
 	
-	public void checkConfigurations() throws ConfigurationException {		
-		if (SystemUtils.IS_OS_WINDOWS && StringUtils.isEmpty(PreferenceConstants.getCygwinPath())) {
-			throw new ConfigurationException(getErrorMessage("cygwin"));
-		}
-		
+	public void checkConfigurations() throws ConfigurationException {			
 		if (StringUtils.isEmpty(PreferenceConstants.getJStarExecutable())) {
 			throw new ConfigurationException(getErrorMessage("jStar executable"));
 		}
@@ -149,13 +142,4 @@ public class JStar {
 			}
 		}
 	}
-
-	private String getCygwinPath() {
-		final String cygwinPath = PreferenceConstants.getCygwinPath();
-		if (StringUtils.isNotEmpty(cygwinPath)) {
-			return cygwinPath + File.pathSeparator;
-		}
-		return "";
-	}
-
 }

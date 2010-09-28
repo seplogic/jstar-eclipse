@@ -20,8 +20,6 @@ public class PreferenceConstants {
 
 	public static final String JSTAR_PATH = "jStarPathPreference";
 	
-	public static final String CYGWIN_PATH = "cygwinPathPreference";
-	
 	public static final String SOOT_CLASSPATH_RT = "sootClasspathRtPreference";
 	
 	public static final String SOOT_CLASSPATH_CLASSES = "sootClasspathClassesPreference";
@@ -38,10 +36,6 @@ public class PreferenceConstants {
 	
 	public static String getJStarExecutable() {
 		return getStore().getString(PreferenceConstants.JSTAR_PATH);
-	}
-	
-	public static String getCygwinPath() {
-		return getStore().getString(PreferenceConstants.CYGWIN_PATH);
 	}
 	
 	public static String getJStarLogicLibrary() {

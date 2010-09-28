@@ -28,10 +28,6 @@ public class JStarPreferencePage
 		addField(new DirectoryFieldEditor(PreferenceConstants.JSTAR_ABS_LIBRARY_PREFERENCE, "&jStar Abs Library:", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.JSTAR_SPECS_LIBRARY_PREFERENCE, "&jStar Specs Library:", getFieldEditorParent()));
 		
-		if (SystemUtils.IS_OS_WINDOWS) {
-			addField(new DirectoryFieldEditor(PreferenceConstants.CYGWIN_PATH, "&cygwin path:", getFieldEditorParent()));
-		}
-		
 		if (SystemUtils.IS_OS_MAC) {
 			addField(new FileFieldEditor(PreferenceConstants.SOOT_CLASSPATH_CLASSES, "&classes.jar:", getFieldEditorParent()));
 			addField(new FileFieldEditor(PreferenceConstants.SOOT_CLASSPATH_UI, "&ui.jar:", getFieldEditorParent()));
