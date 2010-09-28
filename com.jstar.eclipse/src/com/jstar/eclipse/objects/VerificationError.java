@@ -18,16 +18,17 @@ public class VerificationError {
 	
 	private String error_message;
 	
-	public VerificationError(final JSONObject json, final String counterExample) throws JSONException {
-		JSONObject error_pos = json.getJSONObject("error_pos");
+	public VerificationError(final JSONObject json) throws JSONException {
+		final JSONObject error_pos = json.getJSONObject("error_pos");
 		startLine = error_pos.getInt("sline");
 		endLine = error_pos.getInt("eline");
 		startPos = error_pos.getInt("spos");
 		endPos = error_pos.getInt("epos");
 		error_message = json.getString("error_text");
 		
-		if (StringUtils.isNotEmpty(counterExample)) {
-			error_message += "\n" + counterExample;
+		final String counter_example = json.getString("counter_example");
+		if (StringUtils.isNotEmpty(counter_example)) {
+			error_message += "\n" + counter_example;
 		}
 	}
 
