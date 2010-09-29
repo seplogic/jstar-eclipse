@@ -48,7 +48,6 @@ public class ConsoleService {
 	public PrintStream getConsoleStream() {
 		MessageConsole myConsole = getConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
-		out.setColor(new Color(null, Colour.RED.getRGB()));
 		return new PrintStream(out);
 	}
 
@@ -62,7 +61,6 @@ public class ConsoleService {
 	public void printErrorMessage(String errorMessage) {
 		MessageConsole myConsole = getConsole();
 		MessageConsoleStream out = myConsole.newMessageStream();
-		out.setColor(new Color(null, Colour.RED.getRGB()));
 		out.println("An error occurred: " + errorMessage);
 		showConsole();
 	}
@@ -72,8 +70,8 @@ public class ConsoleService {
 		MessageConsoleStream out = myConsole.newMessageStream();
 		List<VerificationError> errors = new LinkedList<VerificationError>();
 		
-		StreamThread errorGobbler = new StreamThread(pr.getErrorStream(), out, errors);            
-	    StreamThread outputGobbler = new StreamThread(pr.getInputStream(), out, errors);
+		StreamThread errorGobbler = new StreamThread(pr.getErrorStream(), errors);            
+	    StreamThread outputGobbler = new StreamThread(pr.getInputStream(), errors);
 	        
 	    errorGobbler.start();
 	    outputGobbler.start();
@@ -183,27 +181,26 @@ public class ConsoleService {
 		return new ColourIndexPair(null, -1);
 	}
 	
-	public MessageConsoleStream printLine(String line, MessageConsoleStream out) {
+	public void printLine(String lines) {
 		
-		while (StringUtils.isNotEmpty(line)) {
-			final ColourIndexPair colourIndex = findNextColour(line);
+		MessageConsoleStream out = getConsole().newMessageStream();
+		
+		while (StringUtils.isNotEmpty(lines)) {
+			final ColourIndexPair colourIndex = findNextColour(lines);
 			int index = colourIndex.getIndex();
 			Colour colour = colourIndex.getColour();
 			
 			if (index == -1) {
-				out.print(line);
-				line = "";
+				out.print(lines);
+				lines = "";
 			}
 			else {
-				out.print(line.substring(0, index));
-				line = line.substring(index + colour.getCmdSymbolCount());
+				out.print(lines.substring(0, index));
+				lines = lines.substring(index + colour.getCmdSymbolCount());
 				out = out.getConsole().newMessageStream();
 				out.setColor(new Color(null, colour.getRGB()));
 			}
 		}
-
-		out.println();
-		return out;
 	}
 
 	private enum Colour {
