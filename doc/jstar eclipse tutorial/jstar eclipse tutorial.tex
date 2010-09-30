@@ -35,8 +35,16 @@ For more information go to \href{http://wiki.eclipse.org/Eclipse.ini}{http://wik
 \end{itemize}
 Two ways:
 \begin{enumerate}
-\item Add the jar file \textbf{plugin\_jar/com.jstar.eclipse\_1.0.0.x.jar} to \texttt{eclipse/dropins/} folder and restart Eclipse.
-\item {\color{red} Need to create an update site.}
+\item Update site (Recommended). Go to {\bf  Help} $\rightarrow$ {\bf Install New Software...}. Click {\bf Add...}  and type in the name and update site for the plugin. \\ The update site for the jStar Eclipse Plug-in is \\ {\bf http://github.com/da319/jStar-eclipse/raw/master/com.jstar.eclipse.update.site/}\\
+Press {\bf OK}.\\
+Uncheck {\bf Group items by category}.\\
+\includegraphics[width=4in]{images/updateSite1.jpg}\\\\
+The jStar Eclipse Plug-in should appear, as the following figure shows.\\\\
+\includegraphics[width=4in]{images/updateSite2.jpg}\\\\
+Select the plugin and click {\bf Next}.\\
+Click {\bf Next} in the following dialog.
+Accept the terms of the license agreement and click {\bf Finish}.
+\item Manually. Add the latest plugin jar file\\ \textbf{com.jstar.eclipse.update.site/plugins/com.jstar.eclipse\_1.0.0.x.jar} to \texttt{eclipse/dropins/} folder and restart Eclipse.
 \end{enumerate}
 
 \section{Configuration}
