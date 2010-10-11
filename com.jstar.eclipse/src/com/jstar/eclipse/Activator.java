@@ -9,6 +9,7 @@ package com.jstar.eclipse;
 import java.io.File;
 
 import org.eclipse.core.commands.IExecutionListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -24,6 +25,8 @@ public class Activator extends AbstractUIPlugin {
 	public static final String PLUGIN_ID = "com.jstar.eclipse";
 	public static final String PROCESSOR_PATH = "lib" + File.separator + "jstar_processing.jar";
 	public static final String COMMONS_IO_1_4_PATH = "lib" + File.separator + "commons-io-1.4" + File.separator + "commons-io-1.4.jar";
+	
+    public static Image image = Activator.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons" + File.separator + "jStar_square.gif").createImage();
 
 	private static Activator plugin;
 	private IExecutionListener saveListener;

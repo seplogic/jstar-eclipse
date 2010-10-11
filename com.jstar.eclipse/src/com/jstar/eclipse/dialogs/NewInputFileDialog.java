@@ -31,12 +31,12 @@ import com.jstar.eclipse.services.ConsoleService;
 
 public class NewInputFileDialog extends Dialog {
 	
+	private JavaFile selectedFile;
+	private InputFileKind inputFileKind;
+	private IFile inputFile;
+
 	private Button newButton;
 	private Button browseButton;
-	private IFile inputFile;
-	private InputFileKind inputFileKind;
-	
-	private JavaFile selectedFile;
 
 	protected NewInputFileDialog(Shell parentShell, JavaFile selectedFile, InputFileKind kind) {
 		super(parentShell);
@@ -44,16 +44,16 @@ public class NewInputFileDialog extends Dialog {
 		this.inputFileKind = kind;
 	}
 	
+	@Override
 	protected Control createButtonBar(Composite parent) {
 		return null;
 	}
 	
+	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite parentComponent = (Composite)super.createDialogArea(parent);
 		Composite component = new Composite(parentComponent, SWT.NONE);
-		
-		GridLayout layout = new GridLayout();
-		component.setLayout(layout);
+		component.setLayout(new GridLayout());
 		
 		addNewFileButton(component);		
 		addBrowseButton(component);
@@ -65,7 +65,9 @@ public class NewInputFileDialog extends Dialog {
 		browseButton = new Button(component, SWT.PUSH);
 		browseButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		browseButton.setText("Browse...");
+		
 		browseButton.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				final String filePath = loadFile(getShell());
 				
@@ -89,7 +91,9 @@ public class NewInputFileDialog extends Dialog {
 	private void addNewFileButton(Composite component) {
 		newButton = new Button(component, SWT.PUSH);
 		newButton.setText("Create an empty file");
+		
 		newButton.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				byte[] bytes = "".getBytes();
 				final InputStream source = new ByteArrayInputStream(bytes);
@@ -109,6 +113,7 @@ public class NewInputFileDialog extends Dialog {
 	
 	private IFile createFile(final InputFileKind inputFile, final InputStream source) {		
 		IFile file = null;
+		
 		try {
 			selectedFile.getInputFile(inputFile);
 		}
@@ -123,11 +128,9 @@ public class NewInputFileDialog extends Dialog {
 		
 		try {
 			file.create(source, IResource.NONE, null);
-			/*MessageBox messageBox = new MessageBox(Utils.getInstance().getActiveWindow().getShell());
-			messageBox.setMessage("Created a file " + file.getName() + ".");
-			messageBox.open();*/
 			return file;
-		} catch (CoreException ce) {
+		} 
+		catch (CoreException ce) {
 			ce.printStackTrace(ConsoleService.getInstance().getConsoleStream());
 			throw new RuntimeException(ce.getMessage());
 		}
@@ -142,5 +145,4 @@ public class NewInputFileDialog extends Dialog {
         fd.setText("Open");      
         return fd.open();
     }
-
 }

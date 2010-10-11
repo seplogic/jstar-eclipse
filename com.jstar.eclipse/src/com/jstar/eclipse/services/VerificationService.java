@@ -5,22 +5,21 @@
  */
 package com.jstar.eclipse.services;
 
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorDescriptor;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.FileEditorInput;
 
 import com.jstar.eclipse.dialogs.InputFileDialog;
 import com.jstar.eclipse.exceptions.ConfigurationException;
+import com.jstar.eclipse.exceptions.FolderNotFoundException;
+import com.jstar.eclipse.exceptions.InputFileNotFoundException;
+import com.jstar.eclipse.exceptions.NoJStarRootFolderException;
+import com.jstar.eclipse.exceptions.RequiredFileNotFoundException;
 import com.jstar.eclipse.jobs.VerificationJob;
-import com.jstar.eclipse.objects.JavaFilePersistentProperties;
 import com.jstar.eclipse.objects.JavaFile;
 import com.jstar.eclipse.services.JStar.PrintMode;
 
@@ -41,61 +40,126 @@ public class VerificationService {
 	}
 
 	public void verifyConfig(JavaFile selectedFile, Shell shell) {	
-		checkConfigurations();
-
+		try {
+			JStar.getInstance().checkConfigurations();
+		} 
+		catch (ConfigurationException ce) {
+			ConsoleService.getInstance().printErrorMessage(ce.getMessage());
+			return;
+		}
+		
+		try {
+			checkRequiredFiles(selectedFile);
+		} 
+		catch (RequiredFileNotFoundException e) {
+			return;
+		}
+		
 		final InputFileDialog dialog = new InputFileDialog(shell, selectedFile);
-
 		dialog.setBlockOnOpen(true);
 		final int returnValue = dialog.open();
 		
 		if (returnValue == IDialogConstants.OK_ID) {
-			executeJStar(selectedFile, !dialog.isSeparateSpec(), dialog.getSpecFieldValue(), dialog.getLogicFieldValue(), dialog.getAbsFieldValue(), dialog.getPrintMode());
+			executeJStar(selectedFile, !dialog.isSeparateSpec(), dialog.getPrintMode());
 		}
 	}
 	
-	private void checkConfigurations() {
+	private void checkRequiredFiles(JavaFile selectedFile) throws RequiredFileNotFoundException {
 		try {
-			JStar.getInstance().checkConfigurations();
-		} catch (ConfigurationException re) {
-			ConsoleService.getInstance().printErrorMessage(re.getMessage());
-			throw new IllegalArgumentException();
+			selectedFile.getJavaProject().getJStarRootFolder();
+		}
+		catch (NoJStarRootFolderException njsrfe) {
+			final IFolder folder = Utils.getInstance().specifyJStarRootFolder(selectedFile.getJavaProject());
+			
+			if (folder != null) {
+				selectedFile.getJavaProject().setJStarRootFolder(folder);
+			}
+			
+			throw new RequiredFileNotFoundException();
+		}
+		
+		try {
+			selectedFile.getOutputDirectory();
+		}
+		catch (FolderNotFoundException fnfe) {
+			createFolder(fnfe.getFolder());
+		}
+		
+		try {
+			selectedFile.getGeneratedDir();
+		}
+		catch (FolderNotFoundException fnfe) {
+			createFolder(fnfe.getFolder());
+		}
+		
+	}
+	
+	private void checkInputFiles(JavaFile selectedFile) throws RequiredFileNotFoundException {
+		if (!selectedFile.isSpecInSource()) {
+			try {
+				selectedFile.getSpecFile();
+			}
+			catch (InputFileNotFoundException ifnfe) {
+				throw new RequiredFileNotFoundException();
+			}
+		}
+		
+		try {
+			selectedFile.getLogicFile();
+			selectedFile.getAbsFile();
+		}
+		catch (InputFileNotFoundException ifnfe) {
+			throw new RequiredFileNotFoundException();
+		}
+	}
+	
+	private void createFolder(final IFolder folder) {
+		try {
+			folder.create(IResource.NONE, true, null);
+		} 
+		catch (CoreException ce) {
+			ce.printStackTrace(ConsoleService.getInstance().getConsoleStream());
 		}
 	}
 	
 	public void verify(JavaFile selectedFile, Shell shell) {
-		checkConfigurations();
-		
-		boolean isSpecInSource = JavaFilePersistentProperties.isSpecInSourceFile(selectedFile);		
-		String specFile = JavaFilePersistentProperties.getSpecFile(selectedFile);
-		String logicFile = JavaFilePersistentProperties.getLogicFile(selectedFile);
-		String absFile = JavaFilePersistentProperties.getAbsFile(selectedFile);
-		PrintMode mode = JavaFilePersistentProperties.getMode(selectedFile);
-		
-		if ((StringUtils.isEmpty(specFile) && !isSpecInSource) || logicFile.isEmpty() || absFile.isEmpty()) {
-			verifyConfig(selectedFile, shell);
+		try {
+			JStar.getInstance().checkConfigurations();
+		} catch (ConfigurationException ce) {
+			ConsoleService.getInstance().printErrorMessage(ce.getMessage());
 			return;
 		}
 		
-		executeJStar(selectedFile, isSpecInSource, specFile, logicFile, absFile, mode);
+		try {
+			checkRequiredFiles(selectedFile);
+		} 
+		catch (RequiredFileNotFoundException e) {
+			return;
+		}
+		
+		boolean isSpecInSource = selectedFile.isSpecInSource();			
+		PrintMode mode = selectedFile.getMode();	
+		
+		try {
+			checkInputFiles(selectedFile);
+		}
+		catch (RequiredFileNotFoundException rfnfe) {
+			verifyConfig(selectedFile, shell);
+			return;
+		}
+				
+		executeJStar(selectedFile, isSpecInSource, mode);
 	}
 	
-	private void executeJStar(final JavaFile selectedFile, final boolean isSpecInSource, final String specFile, final String logicFile, final String absFile, final PrintMode mode) {
+	private void executeJStar(final JavaFile selectedFile, final boolean isSpecInSource, final PrintMode mode) {
+		String specFile = isSpecInSource ? null : selectedFile.getSpecFile().getLocation().toOSString();
+		String logicFile = selectedFile.getLogicFile().getLocation().toOSString();
+		String absFile = selectedFile.getAbsFile().getLocation().toOSString();	
+		
 		VerificationJob job = new VerificationJob("jStar Verification", selectedFile, isSpecInSource, specFile, logicFile, absFile, mode);
 		job.setPriority(Job.SHORT);
 		job.setRule(getRule());
 		job.schedule(); 
-	}
-	
-	public void openFileInEditor(final IFile selectedFile) {
-		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();	
-		IEditorDescriptor desc = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(selectedFile.getName());
-		
-		try {
-			page.openEditor(new FileEditorInput(selectedFile), desc.getId());
-		} 
-		catch (PartInitException pie) {
-			pie.printStackTrace(ConsoleService.getInstance().getConsoleStream());
-		}
 	}
 	
 	private Mutex getRule() {

@@ -1,9 +1,7 @@
 package com.jstar.eclipse.objects;
 
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaProject;
 
 import com.jstar.eclipse.exceptions.NoJStarRootFolderException;
@@ -12,7 +10,7 @@ public class JavaProject {
 	
 	IJavaProject project;
 	
-	public JavaProject (IJavaProject project) {
+	public JavaProject (final IJavaProject project) {
 		this.project = project;
 	}
 	
@@ -24,9 +22,8 @@ public class JavaProject {
 		return project;
 	}
 	
-	public IFolder getJStarRootFolder() throws NoJStarRootFolderException {
+	public IFolder getJStarRootFolder() {
 		final String relativePath = JavaFilePersistentProperties.getJStarRootFolder(this);
-		
 		final IFolder folder = project.getProject().getFolder(relativePath);
 		
 		if (!folder.exists()) {
@@ -36,7 +33,7 @@ public class JavaProject {
 		return folder;
 	}
 	
-	public void setJStarRootFolder(IFolder jStarFolder) {
+	public void setJStarRootFolder(final IFolder jStarFolder) {
 		JavaFilePersistentProperties.setJStarRootFolder(this, jStarFolder.getProjectRelativePath().toOSString());
 	}
 }

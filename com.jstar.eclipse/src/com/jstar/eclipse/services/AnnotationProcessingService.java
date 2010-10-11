@@ -44,8 +44,7 @@ public class AnnotationProcessingService {
 			throw new NullPointerException();
 		}
 		
-		final String generated = selectedFile.makeGeneratedDir();
-		
+		final String generated = selectedFile.getGeneratedDir().getLocation().toOSString();
 		
 		final URL processorURL = FileLocator.find(Activator.getDefault().getBundle(), new Path(Activator.PROCESSOR_PATH), null);
 		final URL requiredLib = FileLocator.find(Activator.getDefault().getBundle(), new Path(Activator.COMMONS_IO_1_4_PATH), null);

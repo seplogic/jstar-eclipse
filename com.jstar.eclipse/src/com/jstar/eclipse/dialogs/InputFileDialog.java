@@ -5,45 +5,35 @@
  */
 package com.jstar.eclipse.dialogs;
 
-import java.io.File;
 
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import com.jstar.eclipse.Activator;
-import com.jstar.eclipse.objects.JavaFilePersistentProperties;
+import com.jstar.eclipse.exceptions.InputFileNotFoundException;
+import com.jstar.eclipse.objects.InputFileKind;
 import com.jstar.eclipse.objects.JavaFile;
-import com.jstar.eclipse.services.AnnotationProcessingService;
+import com.jstar.eclipse.services.Utils;
 import com.jstar.eclipse.services.JStar.PrintMode;
 
 public class InputFileDialog extends Dialog {
-	
-	private final String SPECS = "specs";
-	private final String LOGIC = "logic";
-	private final String ABS = "abs";
-	
 	private JavaFile selectedFile;
 	
 	private Text specField;
 	private Text logicField;
 	private Text absField;
-	private Combo jimpleFileField;
 	private String specFieldValue;
 	private String logicFieldValue;
 	private String absFieldValue;
@@ -52,13 +42,20 @@ public class InputFileDialog extends Dialog {
 	private Button quiet;
 	private Button verbose;
 	
-    private Image image = Activator.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons" + File.separator + "jStar_square.gif").createImage();
 	private Button specSource;
 	private Button specSeparate;
 	private Label specLabel;
 	private Button specButton;
 	private boolean separateSpec;
+	private Text genSpecField;
+	private Label genSpecLabel;
+	
+	private String OPEN_TEXT = "Open";
+	private String ADD_TEXT = "Add";
 
+	private Button logicButton;
+
+	private Button absButton;
 
 	public InputFileDialog(Shell parentShell, JavaFile selectedFile) {
 		super(parentShell);
@@ -75,13 +72,9 @@ public class InputFileDialog extends Dialog {
 		addInputFilesGroup(component);
 		addModeGroup(component);
 	    
-	    setDefaultLocations(getSelectedFileLocation());
+	    setDefaultLocations();
 	
 		return parentComponent;
-	}
-	
-	private String getSelectedFileLocation() {
-		return new File(selectedFile.getFile().getLocation().toOSString()).getParentFile().getAbsolutePath();
 	}
 	
 	private void addModeGroup(Composite component) {
@@ -100,10 +93,10 @@ public class InputFileDialog extends Dialog {
 	    verbose.setText("Run jStar in verbose mode");
 	    verbose.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-	    setMode(JavaFilePersistentProperties.getMode(selectedFile));
+	    setMode(selectedFile.getMode());
 	}
 
-	
+	// TODO: refactor
 	private void addSpecificationGroup(Composite component) {
 	    Group group = new Group(component, SWT.SHADOW_IN);
 	    group.setText("Specification");
@@ -120,12 +113,26 @@ public class InputFileDialog extends Dialog {
 	    specSource.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				setEnabledSpecSeparate(false);
+				setEnabledSpecInSource(true);
 			}
 			
 			public void widgetDefaultSelected(SelectionEvent e) {
 				setEnabledSpecSeparate(false);
+				setEnabledSpecInSource(true);
 			}
 	    });
+	    
+		GridData gd = new GridData();
+		gd.widthHint = 400;
+		gd.horizontalSpan = 2;
+		
+		genSpecLabel = new Label(group, SWT.NONE);
+		genSpecLabel.setText("Generated Specification File:");
+
+		genSpecField = new Text(group, SWT.BORDER);
+		genSpecField.setEditable(false);
+		genSpecField.setLayoutData(gd);
+		genSpecField.setText(selectedFile.getGeneratedSpecLocation());
 	    
 	    specSeparate = new Button(group, SWT.RADIO);
 	    specSeparate.setText("Specification is in separate file");
@@ -134,10 +141,12 @@ public class InputFileDialog extends Dialog {
 	    specSeparate.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				setEnabledSpecSeparate(true);
+				setEnabledSpecInSource(false);
 			}
 			
 			public void widgetDefaultSelected(SelectionEvent e) {
 				setEnabledSpecSeparate(true);
+				setEnabledSpecInSource(false);
 			}
 	    });
 	    
@@ -148,17 +157,47 @@ public class InputFileDialog extends Dialog {
 		specLabel.setText("Specification File:");
 
 		specField = new Text(group, SWT.BORDER);
+		specField.setEditable(false);
 		specField.setLayoutData(gridData);
+		
+		boolean specExists = true;
+		
+		try {
+			selectedFile.getSpecFile();
+		}
+		catch (InputFileNotFoundException ifnfe) {
+			specExists = false;
+		}
 				
 		specButton = new Button(group, SWT.PUSH);
 		specButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				specField.setText(loadFile(getShell(), specField.getText()));
+				if (specButton.getText().equals(OPEN_TEXT)) {
+					Utils.getInstance().openFileInEditor(selectedFile.getSpecFile());
+					setReturnCode(IDialogConstants.CANCEL_ID);
+					close();
+				}
+				else {			
+					final NewInputFileDialog dialog = new NewInputFileDialog(getShell(), selectedFile, InputFileKind.SPEC);
+					dialog.setBlockOnOpen(true);
+					final int returnValue = dialog.open();
+					
+					if (returnValue == IDialogConstants.OK_ID) {
+						specField.setText(dialog.getInputFile().getProjectRelativePath().toOSString());
+						specButton.setText(OPEN_TEXT);
+					}
+				}
 			}
 		});
-		specButton.setText("Browse");
 		
-	    if (JavaFilePersistentProperties.isSpecInSourceFile(selectedFile)) {
+		if (specExists) {
+			specButton.setText(OPEN_TEXT);
+		}
+		else {
+			specButton.setText(ADD_TEXT);
+		}
+		
+	    if (selectedFile.isSpecInSource()) {
 	    	specSource.setSelection(true);
 	    	setEnabledSpecSeparate(false);
 	    }
@@ -174,6 +213,12 @@ public class InputFileDialog extends Dialog {
 		specButton.setEnabled(enabled);
 	}
 	
+	private void setEnabledSpecInSource(boolean enabled) {
+		genSpecField.setEnabled(enabled);
+		genSpecLabel.setEnabled(enabled);
+	}
+	
+	// TODO: refactor
 	private void addInputFilesGroup(Composite component) {
 	    Group group = new Group(component, SWT.SHADOW_IN);
 	    group.setText("Input Files");
@@ -182,99 +227,111 @@ public class InputFileDialog extends Dialog {
 	    gridLayout.horizontalSpacing = 10;
 	    gridLayout.verticalSpacing = 10;
 	    group.setLayout(gridLayout);
-		
-		GridData gridData = new GridData();
-		gridData.widthHint = 400;		
+	    group.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));	
 		
 		Label logicLabel = new Label(group, SWT.NONE);
-		logicLabel.setText("Logic rules");
+		logicLabel.setText("Logic rules:");
 		
 		logicField = new Text(group, SWT.BORDER);
-		logicField.setLayoutData(gridData);
+		logicField.setEditable(false);
+		logicField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
-		Button logicButton = new Button(group, SWT.PUSH);
+		logicButton = new Button(group, SWT.PUSH);
+		boolean logicExists = true;
+		
+		try {
+			selectedFile.getLogicFile();
+		}
+		catch (InputFileNotFoundException ifnfe) {
+			logicExists = false;
+		}
+		
 		logicButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				logicField.setText(loadFile(getShell(), logicField.getText()));
+				if (logicButton.getText().equals(OPEN_TEXT)) {
+					Utils.getInstance().openFileInEditor(selectedFile.getLogicFile());
+					setReturnCode(IDialogConstants.CANCEL_ID);
+					close();
+				}				
+				else {
+					final NewInputFileDialog dialog = new NewInputFileDialog(getShell(), selectedFile, InputFileKind.LOGIC);
+					dialog.setBlockOnOpen(true);
+					final int returnValue = dialog.open();
+					
+					if (returnValue == IDialogConstants.OK_ID) {
+						logicField.setText(dialog.getInputFile().getProjectRelativePath().toOSString());
+						logicButton.setText(OPEN_TEXT);
+					}
+				}
 			}
 		});
-		logicButton.setText("Browse");
+		
+		if (logicExists) {
+			logicButton.setText(OPEN_TEXT);
+		}
+		else {
+			logicButton.setText(ADD_TEXT);
+		}
 		
 		Label absLabel = new Label(group, SWT.NONE);
-		absLabel.setText("Abstraction rules");
+		absLabel.setText("Abstraction rules:");
 		
 		absField = new Text(group, SWT.BORDER);
-		absField.setLayoutData(gridData);
+		absField.setEditable(false);
+		absField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
-		Button absButton = new Button(group, SWT.PUSH);
+		boolean absExists = true;
+		
+		try {
+			selectedFile.getAbsFile();
+		}
+		catch (InputFileNotFoundException ifnfe) {
+			absExists = false;
+		}
+		
+		absButton = new Button(group, SWT.PUSH);
 		absButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				absField.setText(loadFile(getShell(), absField.getText()));
+				if (absButton.getText().equals(OPEN_TEXT)) {
+					Utils.getInstance().openFileInEditor(selectedFile.getAbsFile());
+					setReturnCode(IDialogConstants.CANCEL_ID);
+					close();
+				}
+				else {
+					final NewInputFileDialog dialog = new NewInputFileDialog(getShell(), selectedFile, InputFileKind.ABS);
+					dialog.setBlockOnOpen(true);
+					final int returnValue = dialog.open();
+					
+					if (returnValue == IDialogConstants.OK_ID) {
+						absField.setText(dialog.getInputFile().getProjectRelativePath().toOSString());
+						absButton.setText(OPEN_TEXT);
+					}
+				}
+				
 			}
 		});
-		absButton.setText("Browse");
+		
+		if (absExists) {
+			absButton.setText(OPEN_TEXT);
+		}
+		else {
+			absButton.setText(ADD_TEXT);
+		}
 	}
 	
-	private void setDefaultLocations(final String fileLocation) {
-		setDefaultSpec(fileLocation);
-		setDefaultLogic(fileLocation);
-		setDefaultAbs(fileLocation);
+	private void setDefaultLocations() {		
+		specField.setText(getInputFileLocation(InputFileKind.SPEC));
+		logicField.setText(getInputFileLocation(InputFileKind.LOGIC));
+		absField.setText(getInputFileLocation(InputFileKind.ABS));
 	}
 	
-	private void setDefaultAbs(String fileLocation) {
-		final String absFile = JavaFilePersistentProperties.getAbsFile(selectedFile);
-		
-		if (StringUtils.isEmpty(absFile)) {
-			final File defaultAbsFile = new File(inputFileDirectory(fileLocation) + ABS);
-			
-			if (defaultAbsFile.exists()) {
-				absField.setText(defaultAbsFile.getAbsolutePath());
-				return;
-			}
+	private String getInputFileLocation(final InputFileKind inputFile) {
+		try {
+			return selectedFile.getInputFile(inputFile).getProjectRelativePath().toOSString();
 		}
-		
-		absField.setText(absFile);
-	}
-
-	private void setDefaultLogic(final String fileLocation) {
-		final String logicFile = JavaFilePersistentProperties.getLogicFile(selectedFile);
-		
-		if (StringUtils.isEmpty(logicFile)) {
-			final File defaultLogicFile = new File(inputFileDirectory(fileLocation) + LOGIC);
-			
-			if (defaultLogicFile.exists()) {
-				logicField.setText(defaultLogicFile.getAbsolutePath());
-				return;
-			}
+		catch (InputFileNotFoundException ifnfe) {
+			return "";
 		}
-		
-		logicField.setText(logicFile);
-	}
-
-	private void setDefaultSpec(final String fileLocation) {
-		final String specFile = JavaFilePersistentProperties.getSpecFile(selectedFile);
-		
-		if (StringUtils.isEmpty(specFile)) {	
-			final File defaultSpecFileSpecs = new File(inputFileDirectory(fileLocation) + SPECS);
-			
-			if (defaultSpecFileSpecs.exists()) {
-				specField.setText(defaultSpecFileSpecs.getAbsolutePath());
-				return;
-			}
-			
-			final File defaultSpecFileClassSpec = new File(inputFileDirectory(fileLocation) + selectedFile.getNameWithoutExtension() + AnnotationProcessingService.SPEC_EXT);
-			
-			if (defaultSpecFileClassSpec.exists()) {
-				specField.setText(defaultSpecFileClassSpec.getAbsolutePath());
-				return;
-			}
-		}
-		
-		specField.setText(specFile);
-	}
-	
-	private String inputFileDirectory(final String fileLocation) {
-		return fileLocation + File.separator + JavaFile.INPUT_FILES + File.separator;
 	}
 
 	private PrintMode getMode() {
@@ -294,32 +351,10 @@ public class InputFileDialog extends Dialog {
 		}
 	}
 	
-    private String loadFile (final Shell shell, final String path) {
-        final FileDialog fd = new FileDialog(shell, SWT.OPEN);
-        fd.setText("Open");      
-        String filterPath = null;
-        
-        if (path != null) {
-	        final File file = new File(path);
-	                
-	        if (file.isDirectory()) {
-	        	filterPath = file.getAbsolutePath();
-	        }
-	        else {
-	        	filterPath = file.getParent();
-	        }  
-        }
-        
-        fd.setFilterPath(filterPath);
-        
-        return fd.open();
-    }
-	
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
         shell.setText("jStar verification");
-        shell.setImage(image);
-
+        shell.setImage(Activator.image);
     }
     
 	@Override
@@ -350,21 +385,10 @@ public class InputFileDialog extends Dialog {
 	}
 
 	@Override
-	protected void okPressed() {
-		setSpecFieldValue(specField.getText());
-		JavaFilePersistentProperties.setSpecFile(selectedFile, specField.getText());
-		setLogicFieldValue(logicField.getText());
-		JavaFilePersistentProperties.setLogicFile(selectedFile, logicField.getText());
-		setAbsFieldValue(absField.getText());
-		JavaFilePersistentProperties.setAbsFile(selectedFile, absField.getText());
-		
-		if (jimpleFileField != null) {
-			setJimpleFile((String)jimpleFileField.getData(jimpleFileField.getItem(jimpleFileField.getSelectionIndex())));
-		}
-		
+	protected void okPressed() {	
 		final PrintMode mode = getMode();
 		setPrintMode(mode);
-		JavaFilePersistentProperties.setMode(selectedFile, mode);
+		selectedFile.setMode(mode);
 
 		
 		if (specSource.getSelection()) {
@@ -374,7 +398,7 @@ public class InputFileDialog extends Dialog {
 			separateSpec = true;
 		}
 		
-		JavaFilePersistentProperties.setSpecInSourceFile(selectedFile, !separateSpec);
+		selectedFile.setSpecInSource(!separateSpec);
 		
 		super.okPressed();
 	}
@@ -434,5 +458,4 @@ public class InputFileDialog extends Dialog {
 	public boolean isSeparateSpec() {
 		return separateSpec;
 	}
-
 }

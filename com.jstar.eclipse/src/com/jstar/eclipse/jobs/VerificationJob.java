@@ -52,7 +52,7 @@ public class VerificationJob extends Job {
 			spec = specFile;
 		}
 		
-		final List<File> jimpleFiles = JStar.getInstance().convertToJimple(selectedFile);
+		List<File> jimpleFiles = JStar.getInstance().convertToJimple(selectedFile);
 		
 		try {		
 			selectedFile.clearMarkers();

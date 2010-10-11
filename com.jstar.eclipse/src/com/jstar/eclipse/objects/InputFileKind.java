@@ -1,10 +1,6 @@
 package com.jstar.eclipse.objects;
 
-import com.jstar.eclipse.exceptions.SpecNotFoundException;
-import com.jstar.eclipse.exceptions.LogicNotFoundException;
-import com.jstar.eclipse.exceptions.AbsNotFoundException;
-
-public enum InputFile {
+public enum InputFileKind {
 	
 	SPEC("spec"),
 	LOGIC("logic"),
@@ -12,22 +8,11 @@ public enum InputFile {
 	
 	private String extension;
 	
-	InputFile(final String extension) {
+	InputFileKind(final String extension) {
 		this.extension = extension;
 	}
 
 	public String getExtension() {
 		return extension;
 	}
-	
-	public Exception getNotFoundException() {
-		switch (this) { 
-			case SPEC : return new SpecNotFoundException();
-			case LOGIC : return new LogicNotFoundException();
-			case ABS : return new AbsNotFoundException();
-		}
-		
-		return null;
-	}
-
 }

@@ -1,19 +1,19 @@
 package com.jstar.eclipse.exceptions;
 
-import com.jstar.eclipse.objects.InputFileKind;
+import org.eclipse.core.resources.IFile;
 
-public class InputFileNotFoundException extends Exception {
+public class InputFileNotFoundException extends RuntimeException {
 	
 	private static final long serialVersionUID = 2332313556877153466L;
 	
-	private InputFileKind inputFile;
+	private IFile inputFile;
 	
-	public InputFileNotFoundException(InputFileKind inputFile) {
+	public InputFileNotFoundException(IFile inputFile) {
 		super();
 		this.inputFile = inputFile;
 	}
 
-	public InputFileKind getInputFile() {
+	public IFile getInputFile() {
 		return inputFile;
 	}
 

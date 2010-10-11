@@ -56,8 +56,9 @@ public class JStar {
 	@SuppressWarnings("static-access")
 	// in io 2.0 FileUtils.listFiles should return Collection<File> instead of Collection
 	public List<File> convertToJimple(final JavaFile fileToConvert) {
-		String fileDirectory = fileToConvert.getPackageFragmentRootLocation().toOSString();         
-        String javaFile = fileToConvert.getNameWithPackage();		
+		String fileDirectory = fileToConvert.getOutputDirectory().getLocation().toOSString();         
+        String javaFile = fileToConvert.getNameWithPackage();
+      
 		final String sootOutput = fileDirectory + File.separator + SootOutput + File.separator + javaFile;
 		
 		final String[] args = {

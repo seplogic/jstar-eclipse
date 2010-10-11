@@ -138,5 +138,15 @@
             icon="icons/jStar.gif">
       </image>
    </extension>
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            adaptable="false"
+            class="com.jstar.eclipse.properties.ProjectPropertyPage"
+            id="com.jstar.eclipse.project.property.page"
+            name="jStar"
+            objectClass="org.eclipse.jdt.core.IJavaProject">
+      </page>
+   </extension>
 
 </plugin>
