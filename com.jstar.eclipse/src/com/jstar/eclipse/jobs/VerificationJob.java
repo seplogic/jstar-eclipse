@@ -48,12 +48,11 @@ public class VerificationJob extends Job {
 		
 		if (isSpecInSource) {
 			spec = AnnotationProcessingService.getInstance().processAnnotations(selectedFile).getAbsolutePath();
+			Utils.getInstance().makeImportsReady(selectedFile);
 		} 
 		else {
 			spec = specFile;
 		}
-		
-		Utils.getInstance().makeImportsReady(selectedFile);
 		
 		List<File> jimpleFiles = JStar.getInstance().convertToJimple(selectedFile);
 		

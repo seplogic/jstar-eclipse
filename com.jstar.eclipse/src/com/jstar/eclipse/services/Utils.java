@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -33,12 +34,13 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 import org.eclipse.ui.model.BaseWorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.part.FileEditorInput;
 
+import com.jstar.eclipse.dialogs.JStarRootFolderDialog;
 import com.jstar.eclipse.exceptions.InputFileNotFoundException;
+import com.jstar.eclipse.exceptions.NoJStarRootFolderException;
 import com.jstar.eclipse.objects.InputFileKind;
 import com.jstar.eclipse.objects.JavaFile;
 import com.jstar.eclipse.objects.JavaFilePersistentProperties;
@@ -131,21 +133,41 @@ public class Utils {
 	}
 
 	public IFolder specifyJStarRootFolder(JavaProject javaProject) {
+		final IProject project = javaProject.getProject().getProject();
+		
 		final ViewerFilter directoryFilter = new ViewerFilter() {
 	        public boolean select(final Viewer viewer, final Object parentElement, final Object element) {
-	                return ((IResource)element).getType() == IResource.FOLDER;
+	        	final IResource resource = (IResource) element;
+	        	return element == project || (resource.getType() == IResource.FOLDER && resource.getProject() == project);
 	        }
 	    };
 		
-		final ElementTreeSelectionDialog dialog = new ElementTreeSelectionDialog(getActiveWindow().getShell(), new WorkbenchLabelProvider(), new BaseWorkbenchContentProvider());
+		final JStarRootFolderDialog dialog = new JStarRootFolderDialog(getActiveWindow().getShell(), new WorkbenchLabelProvider(), new BaseWorkbenchContentProvider());
 		dialog.setTitle("jStar folder selection");
 		dialog.setMessage("Select the folder where specifications and rules will be stored:");
-		dialog.setInput(javaProject.getProject().getProject());
+		dialog.setInput(project.getParent());
+		
+		try {
+			dialog.setInitialSelection(javaProject.getJStarRootFolder());
+		}
+		catch (NoJStarRootFolderException njsrfe) {
+			// do nothing
+		}
+		
 		dialog.setAllowMultiple(false);
 		dialog.addFilter(directoryFilter);
 		int returnValue = dialog.open();
 		
 		if (returnValue == Window.CANCEL) {
+			for (final IFolder folder : dialog.getFoldersToDelete()) {
+				try {
+					folder.delete(false, null);
+				} 
+				catch (CoreException ce) {
+					ce.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+				}
+			}
+			
 			return null;
 		}
 		

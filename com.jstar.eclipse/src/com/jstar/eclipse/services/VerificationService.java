@@ -58,6 +58,7 @@ public class VerificationService {
 		final int returnValue = dialog.open();
 		
 		if (returnValue == IDialogConstants.OK_ID) {
+			//TODO: check if specification file exists if dialog.isSeparateSpec == false
 			executeJStar(selectedFile, !dialog.isSeparateSpec(), dialog.getPrintMode());
 		}
 	}
