@@ -6,8 +6,6 @@
 package com.jstar.eclipse.services;
 
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -79,19 +77,16 @@ public class VerificationService {
 		}
 		
 		try {
+			selectedFile.getJavaProject().getGeneratedDir();
 			selectedFile.getOutputDirectory();
-		}
-		catch (FolderNotFoundException fnfe) {
-			createFolder(fnfe.getFolder());
-		}
-		
-		try {
 			selectedFile.getGeneratedDir();
 		}
 		catch (FolderNotFoundException fnfe) {
-			createFolder(fnfe.getFolder());
+			final IFolder folder = selectedFile.getJavaProject().getJStarRootFolder();
+			
+			//TODO: refactor
+			Utils.getInstance().createFolder(folder, fnfe.getFolder().getProjectRelativePath().removeFirstSegments(folder.getProjectRelativePath().segmentCount()));
 		}
-		
 	}
 	
 	private void checkInputFiles(JavaFile selectedFile) throws RequiredFileNotFoundException {
@@ -110,15 +105,6 @@ public class VerificationService {
 		}
 		catch (InputFileNotFoundException ifnfe) {
 			throw new RequiredFileNotFoundException();
-		}
-	}
-	
-	private void createFolder(final IFolder folder) {
-		try {
-			folder.create(IResource.NONE, true, null);
-		} 
-		catch (CoreException ce) {
-			ce.printStackTrace(ConsoleService.getInstance().getConsoleStream());
 		}
 	}
 	

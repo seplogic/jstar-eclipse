@@ -20,6 +20,7 @@ import com.jstar.eclipse.objects.JavaFile;
 import com.jstar.eclipse.services.AnnotationProcessingService;
 import com.jstar.eclipse.services.ConsoleService;
 import com.jstar.eclipse.services.JStar;
+import com.jstar.eclipse.services.Utils;
 import com.jstar.eclipse.services.JStar.PrintMode;
 
 public class VerificationJob extends Job {
@@ -52,13 +53,15 @@ public class VerificationJob extends Job {
 			spec = specFile;
 		}
 		
+		Utils.getInstance().makeImportsReady(selectedFile);
+		
 		List<File> jimpleFiles = JStar.getInstance().convertToJimple(selectedFile);
 		
 		try {		
 			selectedFile.clearMarkers();
 			
 			for (File jimpleFile : jimpleFiles) {
-				Process pr = JStar.getInstance().executeJStar(spec, logicFile, absFile, jimpleFile.getAbsolutePath(), mode);			
+				Process pr = JStar.getInstance().executeJStar(selectedFile.getJavaProject().getGeneratedDir(), spec, logicFile, absFile, jimpleFile.getAbsolutePath(), mode);			
 				ConsoleService.getInstance().printToConsole(selectedFile, pr);
 			}
 			

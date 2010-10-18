@@ -25,6 +25,7 @@ public class Activator extends AbstractUIPlugin {
 	public static final String PLUGIN_ID = "com.jstar.eclipse";
 	public static final String PROCESSOR_PATH = "lib" + File.separator + "jstar_processing.jar";
 	public static final String COMMONS_IO_1_4_PATH = "lib" + File.separator + "commons-io-1.4" + File.separator + "commons-io-1.4.jar";
+	public static final String COMMONS_LANG_2_5_PATH = "lib" + File.separator + "commons-lang-2.5" + File.separator + "commons-lang-2.5.jar";
 	
     public static Image image = Activator.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons" + File.separator + "jStar_square.gif").createImage();
 

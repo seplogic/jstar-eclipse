@@ -132,7 +132,7 @@ public class InputFileDialog extends Dialog {
 		genSpecField = new Text(group, SWT.BORDER);
 		genSpecField.setEditable(false);
 		genSpecField.setLayoutData(gd);
-		genSpecField.setText(selectedFile.getGeneratedSpecLocation());
+		genSpecField.setText(selectedFile.getGeneratedSpec().getProjectRelativePath().toOSString());
 	    
 	    specSeparate = new Button(group, SWT.RADIO);
 	    specSeparate.setText("Specification is in separate file");

@@ -26,6 +26,7 @@ import javax.tools.StandardLocation;
 
 import com.jstar.eclipse.processing.annotations.AllAnnotations;
 import com.jstar.eclipse.processing.annotations.FileAnnotations;
+import com.jstar.eclipse.processing.annotations.objects.ImportObject;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.SourcePositions;
@@ -55,6 +56,7 @@ public class SpecAnnotationProcessor extends AbstractProcessor {
 		if (!allAnnotations.isEmpty()) {
 			try {
 				generateSpec(processingEnv.getFiler(), allAnnotations);
+				generateImports(processingEnv.getFiler(), allAnnotations);
 			}
 			catch(Exception exc) {
 				messager.printMessage(Diagnostic.Kind.ERROR, exc.getMessage());
@@ -75,6 +77,21 @@ public class SpecAnnotationProcessor extends AbstractProcessor {
 		   writer.close();
 		}
 		
+	}
+	
+	private void generateImports(final Filer filer, final AllAnnotations allAnnotations) throws IOException {		
+		for (final FileAnnotations fileAnnotations : allAnnotations.getFileAnnotations()) {	
+		   final List<ImportObject> importObjects = fileAnnotations.getImportAnnotations();
+		   final FileObject fileObject = filer.createResource(StandardLocation.CLASS_OUTPUT, "",  fileAnnotations.getBaseSourceFileName() + ".imports");
+		   final Writer writer = fileObject.openWriter();	
+		   
+		   for (final ImportObject object : importObjects) {
+			   object.writeImports(writer);
+		   }
+     
+		   writer.flush();
+		   writer.close();
+		}
 	}
 
 	private void processAnnotation(Element element, TypeElement typeElement,

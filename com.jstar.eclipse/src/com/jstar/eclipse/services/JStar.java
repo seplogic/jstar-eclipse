@@ -19,6 +19,7 @@ import com.jstar.eclipse.objects.JavaFile;
 import com.jstar.eclipse.preferences.PreferenceConstants;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.Path;
 
 public class JStar {
@@ -92,7 +93,7 @@ public class JStar {
 		return jimpleFiles;
 	}
 
-	public Process executeJStar(final String spec,
+	public Process executeJStar(final IFolder folder, final String spec,
 			final String logic, final String abs, final String jimpleFile, final PrintMode printMode) throws IOException {
 
 		ProcessBuilder pb = new ProcessBuilder(PreferenceConstants.getJStarExecutable(), 
@@ -108,8 +109,10 @@ public class JStar {
 				PreferenceConstants.getJStarLogicLibrary());
 		env.put(PreferenceConstants.JSTAR_ABS_LIBRARY,
 				PreferenceConstants.getJStarAbsLibrary());
+		
+		//TODO: jStar accepts only ':' as path separator
 		env.put(PreferenceConstants.JSTAR_SPECS_LIBRARY,
-				PreferenceConstants.getJStarSpecLibrary());
+				PreferenceConstants.getJStarSpecLibrary() + ':' + folder.getLocation().toOSString());
 		env.put(TERM, XTERMCOLOR);
 
 		return pb.start();

@@ -5,12 +5,25 @@
  */
 package com.jstar.eclipse.services;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.window.Window;
@@ -25,7 +38,10 @@ import org.eclipse.ui.model.BaseWorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.part.FileEditorInput;
 
+import com.jstar.eclipse.exceptions.InputFileNotFoundException;
+import com.jstar.eclipse.objects.InputFileKind;
 import com.jstar.eclipse.objects.JavaFile;
+import com.jstar.eclipse.objects.JavaFilePersistentProperties;
 import com.jstar.eclipse.objects.JavaProject;
 
 public class Utils {
@@ -146,6 +162,175 @@ public class Utils {
 		} 
 		catch (PartInitException pie) {
 			pie.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+		}
+	}
+	
+	public IFile createEmptyFile(final JavaFile selectedFile, final InputFileKind inputFile) {
+		byte[] bytes = "".getBytes();
+		final InputStream source = new ByteArrayInputStream(bytes);
+		
+		return createFile(selectedFile, inputFile, source);
+	}
+	
+	// TODO: refactor
+	public IFile createFile(final JavaFile selectedFile, final InputFileKind inputFile, final InputStream source) {		
+		IFile file = null;
+		
+		try {
+			selectedFile.getInputFile(inputFile);
+		}
+		catch (InputFileNotFoundException ifnfe) {
+			file = ifnfe.getInputFile();
+		}
+		
+		if (file == null) {
+			// File already exists
+			return selectedFile.getInputFile(inputFile);
+		}
+	
+		IFolder folder = selectedFile.getJavaProject().getJStarRootFolder();
+		IPath path = file.getProjectRelativePath().removeFirstSegments(folder.getProjectRelativePath().segmentCount());
+		file = createFile(folder, path.removeLastSegments(1), path.removeFileExtension().lastSegment(), inputFile, source);
+		
+		return file;
+	}
+	
+	public IFile createEmptyFile(final IFolder jStarRootFolder, IPath inputFilePath, final String inputFileName, final InputFileKind kind) {
+		byte[] bytes = "".getBytes();
+		final InputStream source = new ByteArrayInputStream(bytes);
+		
+		return createFile(jStarRootFolder, inputFilePath, inputFileName, kind, source);
+	}
+	
+	
+	public IFile createFile(final IFolder jStarRootFolder, IPath inputFilePath, final String inputFileName, final InputFileKind kind, final InputStream source) {
+		try {
+			final IFolder folder = createFolder(jStarRootFolder, inputFilePath);	
+			IFile inputFile = folder.getFile(new Path(inputFileName).addFileExtension(kind.getExtension()));
+			inputFile.refreshLocal(0, null);
+			
+			if (inputFile.exists()) {
+				// File already exists
+				return inputFile;
+			}
+			
+			inputFile.create(source, IResource.NONE, null);
+			
+			return inputFile;
+		} 
+		catch (CoreException ce) {
+			ce.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+			throw new RuntimeException(ce.getMessage());
+		}
+	}
+	
+	public IFolder createFolder(final IFolder jStarRootFolder, IPath inputFilePath) {
+		try {
+			IFolder folder = jStarRootFolder;
+			
+			while (!inputFilePath.isEmpty()) {
+				String path = inputFilePath.segment(0);
+				inputFilePath = inputFilePath.removeFirstSegments(1);
+				
+				folder = folder.getFolder(path);		
+				folder.refreshLocal(0, null);
+				
+				if (!folder.exists()) {
+					folder.create(IResource.NONE, true, null);
+				}
+			}
+			
+			return folder;
+		}
+		catch (CoreException ce) {
+			ce.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+			throw new RuntimeException(ce.getMessage());
+		}
+	}
+
+	public void makeImportsReady(JavaFile selectedFile) {
+		final File imports = new File(selectedFile.getGeneratedImports().getLocation().toOSString());
+		
+		try {
+			FileReader fileReader = new FileReader(imports);
+			BufferedReader input = new BufferedReader(fileReader);
+			
+			String line = null;
+			while ((line = input.readLine()) != null) {
+				makeImportReady(selectedFile, line);
+			}
+		} 
+		catch (FileNotFoundException fnfe) {
+			fnfe.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+		} 
+		catch (IOException ioe) {
+			ioe.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+		}
+	}
+
+	private void makeImportReady(final JavaFile selectedFile, final String importLine) throws IOException {
+		final IPath sourcePath = new Path(StringUtils.replace(importLine, ".", File.separator));
+		
+		try {
+			final IJavaElement element = selectedFile.getJavaProject().getProject().findElement(sourcePath.addFileExtension("java"));
+			final IResource resource = element.getResource();
+			
+			if (resource == null) {
+				checkFiles(selectedFile, sourcePath);
+				return;
+			}
+			
+			if (resource != null && resource instanceof IFile) {
+			
+				final boolean specInSource = JavaFilePersistentProperties.isSpecInSourceFile(resource);
+				
+				if (specInSource) {
+					IFile file = (IFile) resource;
+					checkGeneratedFiles(file, selectedFile, sourcePath);
+					makeImportsReady(new JavaFile(file));
+				}
+				else {
+					checkFiles(selectedFile, sourcePath);
+				}
+				
+				return;
+			} 
+			
+			throw new RuntimeException("Could not found spec file for the " + importLine);
+			
+		} 
+		catch (JavaModelException jme) {
+			jme.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+		}
+		
+	}
+	
+	private void checkGeneratedFiles(IFile file, final JavaFile selectedFile, final IPath sourcePath) throws IOException {
+		checkGeneratedFile(file);
+		checkFile(selectedFile, sourcePath, InputFileKind.LOGIC);
+		checkFile(selectedFile, sourcePath, InputFileKind.ABS);
+	}
+	
+	private void checkGeneratedFile(final IFile javaFile) {
+		AnnotationProcessingService.getInstance().processAnnotations(new JavaFile(javaFile));
+	}
+
+	private void checkFiles(final JavaFile selectedFile, final IPath sourcePath) throws IOException {
+		checkFile(selectedFile, sourcePath, InputFileKind.SPEC);
+		checkFile(selectedFile, sourcePath, InputFileKind.LOGIC);
+		checkFile(selectedFile, sourcePath, InputFileKind.ABS);
+	}
+
+	private void checkFile(final JavaFile selectedFile, final IPath sourcePath, final InputFileKind kind) throws IOException {
+		final IFolder jStarRootFolder = selectedFile.getJavaProject().getJStarRootFolder();
+		final IFile file = jStarRootFolder.getFile(sourcePath.addFileExtension(kind.getExtension()));
+		final IPath fileCopy = jStarRootFolder.getLocation().append(JavaProject.GENERATED).append(sourcePath).addFileExtension(kind.getExtension());
+		
+		if (file.exists()) {
+			FileUtils.copyFile(new File(file.getLocation().toOSString()), new File(fileCopy.toOSString()));
+		}
+		else {
+			throw new RuntimeException("Could not find the file" + file.getName());
 		}
 	}
 

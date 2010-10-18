@@ -4,11 +4,13 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaProject;
 
+import com.jstar.eclipse.exceptions.FolderNotFoundException;
 import com.jstar.eclipse.exceptions.NoJStarRootFolderException;
 
 public class JavaProject {
 	
-	IJavaProject project;
+	public static final String GENERATED = "generated";
+	private IJavaProject project;
 	
 	public JavaProject (final IJavaProject project) {
 		this.project = project;
@@ -35,5 +37,17 @@ public class JavaProject {
 	
 	public void setJStarRootFolder(final IFolder jStarFolder) {
 		JavaFilePersistentProperties.setJStarRootFolder(this, jStarFolder.getProjectRelativePath().toOSString());
+	}
+	
+	//TODO: make generated directory not to be a workspace resource
+	public IFolder getGeneratedDir() {
+		final IFolder jStarRootFolder = getJStarRootFolder();	
+		final IFolder generated = jStarRootFolder.getFolder(GENERATED);
+		
+		if (!generated.exists()) {
+			throw new FolderNotFoundException(generated);
+		}
+		
+		return generated;
 	}
 }

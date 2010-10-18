@@ -1,15 +1,11 @@
 package com.jstar.eclipse.dialogs;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -24,10 +20,10 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 
 import com.jstar.eclipse.Activator;
-import com.jstar.eclipse.exceptions.InputFileNotFoundException;
 import com.jstar.eclipse.objects.InputFileKind;
 import com.jstar.eclipse.objects.JavaFile;
 import com.jstar.eclipse.services.ConsoleService;
+import com.jstar.eclipse.services.Utils;
 
 public class NewInputFileDialog extends Dialog {
 	
@@ -64,7 +60,7 @@ public class NewInputFileDialog extends Dialog {
 	private void addBrowseButton(Composite component) {
 		browseButton = new Button(component, SWT.PUSH);
 		browseButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		browseButton.setText("Browse...");
+		browseButton.setText("Import...");
 		
 		browseButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -76,7 +72,7 @@ public class NewInputFileDialog extends Dialog {
 					
 					if (file.exists()) {	
 						try {
-							inputFile = createFile(inputFileKind, new FileInputStream(file));
+							inputFile = Utils.getInstance().createFile(selectedFile, inputFileKind, new FileInputStream(file));
 							setReturnCode(IDialogConstants.OK_ID);
 							close();
 						} catch (FileNotFoundException fnfe) {
@@ -95,9 +91,7 @@ public class NewInputFileDialog extends Dialog {
 		newButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				byte[] bytes = "".getBytes();
-				final InputStream source = new ByteArrayInputStream(bytes);
-				inputFile = createFile(inputFileKind, source);	
+				inputFile = Utils.getInstance().createEmptyFile(selectedFile, inputFileKind);	
 				setReturnCode(IDialogConstants.OK_ID);
 				close();
 			}
@@ -110,31 +104,6 @@ public class NewInputFileDialog extends Dialog {
         shell.setText("jStar input file");
         shell.setImage(Activator.image);
     }
-	
-	private IFile createFile(final InputFileKind inputFile, final InputStream source) {		
-		IFile file = null;
-		
-		try {
-			selectedFile.getInputFile(inputFile);
-		}
-		catch (InputFileNotFoundException ifnfe) {
-			file = ifnfe.getInputFile();
-		}
-		
-		if (file == null) {
-			// File already exists
-			return selectedFile.getInputFile(inputFile);
-		}
-		
-		try {
-			file.create(source, IResource.NONE, null);
-			return file;
-		} 
-		catch (CoreException ce) {
-			ce.printStackTrace(ConsoleService.getInstance().getConsoleStream());
-			throw new RuntimeException(ce.getMessage());
-		}
-	}
 
 	public IFile getInputFile() {		
 		return inputFile;

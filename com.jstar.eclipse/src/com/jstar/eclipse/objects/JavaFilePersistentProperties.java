@@ -14,6 +14,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.QualifiedName;
 
+//TODO: Rename
 public class JavaFilePersistentProperties {
 	
 	private static final QualifiedName MODE = new QualifiedName("JSTAR_VERIFICATION", "MODE");
@@ -35,11 +36,15 @@ public class JavaFilePersistentProperties {
 	}
 	
 	public static boolean isSpecInSourceFile(final JavaFile file) {
-		if ("false".equalsIgnoreCase(getProperty(file.getFile(), SPEC_IN_SOURCE_FILE))) {
-			return false;
+		return isSpecInSourceFile(file.getFile());
+	}
+	
+	public static boolean isSpecInSourceFile(final IResource resource) {
+		if ("true".equalsIgnoreCase(getProperty(resource, SPEC_IN_SOURCE_FILE))) {
+			return true;
 		}
 		
-		return true;
+		return false;
 	}
 	
 	public static void setSpecInSourceFile(final JavaFile file, boolean specInSourceFile) {

@@ -46,8 +46,10 @@ public class AnnotationProcessingService {
 		
 		final String generated = selectedFile.getGeneratedDir().getLocation().toOSString();
 		
+		//TODO: refactor
 		final URL processorURL = FileLocator.find(Activator.getDefault().getBundle(), new Path(Activator.PROCESSOR_PATH), null);
 		final URL requiredLib = FileLocator.find(Activator.getDefault().getBundle(), new Path(Activator.COMMONS_IO_1_4_PATH), null);
+		final URL requiredLibLang = FileLocator.find(Activator.getDefault().getBundle(), new Path(Activator.COMMONS_LANG_2_5_PATH), null);
 		String processorLocation = "";
 		
 		try {
@@ -60,9 +62,11 @@ public class AnnotationProcessingService {
 		}
 		
 		String requiredLibLocation = "";
+		String requiredLibLangLocation = "";
 		
 		try {
 			requiredLibLocation = FileLocator.toFileURL(requiredLib).getFile();
+			requiredLibLangLocation = FileLocator.toFileURL(requiredLibLang).getFile();
 		} 
 		catch (IOException ioe) {
 			ConsoleService.getInstance().printErrorMessage("Cannot obtain the location of required libraries for annotation processor.");
@@ -73,7 +77,7 @@ public class AnnotationProcessingService {
 		String[] arguments = {
 				"-proc:only", 
 				"-d", generated, 
-				"-cp", selectedFile.getProjectClasspath() + File.pathSeparator + processorLocation + File.pathSeparator + requiredLibLocation,
+				"-cp", selectedFile.getProjectClasspath() + File.pathSeparator + processorLocation + File.pathSeparator + requiredLibLocation + File.pathSeparator + requiredLibLangLocation,
 				"-processor", PROCESSOR,
 				selectedFile.getAbsolutePath()
 		};
@@ -85,7 +89,7 @@ public class AnnotationProcessingService {
 			throw new RuntimeException();
 		}
 		
-		final File specFile = new File(generated + File.separator + selectedFile.getNameWithoutExtension() + SPEC_EXT);
+		final File specFile = new File(selectedFile.getGeneratedSpec().getLocation().toOSString());
 		
 		if (!specFile.exists()) {
 			ConsoleService.getInstance().printErrorMessage("Any annotations could be found in the source file.");

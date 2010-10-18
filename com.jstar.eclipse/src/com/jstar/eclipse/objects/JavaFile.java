@@ -32,9 +32,8 @@ import com.jstar.eclipse.exceptions.InputFileNotFoundException;
 import com.jstar.eclipse.services.ConsoleService;
 import com.jstar.eclipse.services.JStar.PrintMode;
 
-public class JavaFile {
-	private static final String GENERATED = "generated";
-	
+public class JavaFile {	
+	private static final String IMPORTS = "imports";
 	private IFile file;
 	private JavaProject javaProject;
 
@@ -61,19 +60,23 @@ public class JavaFile {
 		return outputFolder;
 	}
 	
+	//TODO: change generated directory not to be a resource in workspace
 	public IFolder getGeneratedDir() {
-		final IFolder output = getOutputDirectory();	
-		final IFolder generated = output.getFolder(GENERATED);
+		final IFolder folder = getJavaProject().getGeneratedDir().getFolder(getOutputRelativePath());
 		
-		if (!generated.exists()) {
-			throw new FolderNotFoundException(generated);
+		if (!folder.exists()) {
+			throw new FolderNotFoundException(folder);
 		}
 		
-		return generated;
+		return folder;
 	}
 	
-	public String getGeneratedSpecLocation() {
-		return getGeneratedDir().getFile(new Path(getNameWithoutExtension()).addFileExtension(InputFileKind.SPEC.getExtension())).getProjectRelativePath().toOSString();
+	public IFile getGeneratedSpec() {
+		return getGeneratedDir().getFile(new Path(getNameWithoutExtension()).addFileExtension(InputFileKind.SPEC.getExtension()));
+	}
+	
+	public IFile getGeneratedImports() {
+		return getGeneratedDir().getFile(new Path(getNameWithoutExtension()).addFileExtension(IMPORTS));
 	}
 
 	public IFile getFile() {

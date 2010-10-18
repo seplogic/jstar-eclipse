@@ -36,6 +36,20 @@
                tooltip="%action.tooltip.0">
          </action>
       </objectContribution>
+      <objectContribution
+            adaptable="false"
+            id="com.jstar.eclipse.project.contribution"
+            objectClass="org.eclipse.jdt.core.IJavaProject">
+         <action
+               class="com.jstar.eclipse.actions.ExternalClassSpecAction"
+               enablesFor="1"
+               icon="icons/jStar.gif"
+               id="com.jstar.eclipse.external.class.add"
+               label="Add specification for the external class..."
+               menubarPath="additions"
+               style="push">
+         </action>
+      </objectContribution>
    </extension>
    <extension
          id="jstar.verification.marker"

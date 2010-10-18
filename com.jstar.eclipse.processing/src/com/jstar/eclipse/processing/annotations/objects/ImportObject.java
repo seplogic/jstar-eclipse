@@ -10,6 +10,8 @@ import java.io.Writer;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 public class ImportObject extends AnnotationObject {
 	
 	private List<String> specFiles;
@@ -28,7 +30,13 @@ public class ImportObject extends AnnotationObject {
 	@Override
 	public void generateFile(Writer writer) throws IOException {
 		for (final String specFile : specFiles) {
-			writer.write("import \"" + specFile + "\";\n");
+			writer.write("import \"" + StringUtils.replace(specFile, ".", "/") + ".spec\";\n");
+		}
+	}
+	
+	public void writeImports(final Writer writer) throws IOException {
+		for (final String specFile : specFiles) {
+			writer.write(specFile + "\n");
 		}
 	}
 
