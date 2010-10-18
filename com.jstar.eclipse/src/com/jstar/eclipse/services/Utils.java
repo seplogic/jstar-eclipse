@@ -248,12 +248,12 @@ public class Utils {
 		}
 	}
 
-	public void makeImportsReady(JavaFile selectedFile) {
+	public void makeImportsReady(final JavaFile selectedFile) {
 		final File imports = new File(selectedFile.getGeneratedImports().getLocation().toOSString());
 		
 		try {
-			FileReader fileReader = new FileReader(imports);
-			BufferedReader input = new BufferedReader(fileReader);
+			final FileReader fileReader = new FileReader(imports);
+			final BufferedReader input = new BufferedReader(fileReader);
 			
 			String line = null;
 			while ((line = input.readLine()) != null) {
@@ -273,30 +273,34 @@ public class Utils {
 		
 		try {
 			final IJavaElement element = selectedFile.getJavaProject().getProject().findElement(sourcePath.addFileExtension("java"));
+			
+			if (element == null) {
+				throw new NullPointerException("Could not import class: " + importLine + ". Please check if it is written in the correct way, e.g. java.lang.Object");
+			}
+			
 			final IResource resource = element.getResource();
 			
 			if (resource == null) {
-				checkFiles(selectedFile, sourcePath);
+				checkFiles(selectedFile, sourcePath, importLine);
 				return;
 			}
 			
 			if (resource != null && resource instanceof IFile) {
-			
 				final boolean specInSource = JavaFilePersistentProperties.isSpecInSourceFile(resource);
 				
 				if (specInSource) {
-					IFile file = (IFile) resource;
-					checkGeneratedFiles(file, selectedFile, sourcePath);
+					final IFile file = (IFile) resource;
+					checkGeneratedFiles(file, selectedFile, sourcePath, importLine);
 					makeImportsReady(new JavaFile(file));
 				}
 				else {
-					checkFiles(selectedFile, sourcePath);
+					checkFiles(selectedFile, sourcePath, importLine);
 				}
 				
 				return;
 			} 
 			
-			throw new RuntimeException("Could not found spec file for the " + importLine);
+			throw new RuntimeException("Could not import class: " + importLine + ". Please check if it is written in the correct way, e.g. java.lang.Object");
 			
 		} 
 		catch (JavaModelException jme) {
@@ -305,23 +309,23 @@ public class Utils {
 		
 	}
 	
-	private void checkGeneratedFiles(IFile file, final JavaFile selectedFile, final IPath sourcePath) throws IOException {
+	private void checkGeneratedFiles(final IFile file, final JavaFile selectedFile, final IPath sourcePath, final String importLine) throws IOException {
 		checkGeneratedFile(file);
-		checkFile(selectedFile, sourcePath, InputFileKind.LOGIC);
-		checkFile(selectedFile, sourcePath, InputFileKind.ABS);
+		checkFile(selectedFile, sourcePath, InputFileKind.LOGIC, importLine);
+		checkFile(selectedFile, sourcePath, InputFileKind.ABS, importLine);
 	}
 	
 	private void checkGeneratedFile(final IFile javaFile) {
 		AnnotationProcessingService.getInstance().processAnnotations(new JavaFile(javaFile));
 	}
 
-	private void checkFiles(final JavaFile selectedFile, final IPath sourcePath) throws IOException {
-		checkFile(selectedFile, sourcePath, InputFileKind.SPEC);
-		checkFile(selectedFile, sourcePath, InputFileKind.LOGIC);
-		checkFile(selectedFile, sourcePath, InputFileKind.ABS);
+	private void checkFiles(final JavaFile selectedFile, final IPath sourcePath, final String importLine) throws IOException {
+		checkFile(selectedFile, sourcePath, InputFileKind.SPEC, importLine);
+		checkFile(selectedFile, sourcePath, InputFileKind.LOGIC, importLine);
+		checkFile(selectedFile, sourcePath, InputFileKind.ABS, importLine);
 	}
 
-	private void checkFile(final JavaFile selectedFile, final IPath sourcePath, final InputFileKind kind) throws IOException {
+	private void checkFile(final JavaFile selectedFile, final IPath sourcePath, final InputFileKind kind, final String importLine) throws IOException {
 		final IFolder jStarRootFolder = selectedFile.getJavaProject().getJStarRootFolder();
 		final IFile file = jStarRootFolder.getFile(sourcePath.addFileExtension(kind.getExtension()));
 		final IPath fileCopy = jStarRootFolder.getLocation().append(JavaProject.GENERATED).append(sourcePath).addFileExtension(kind.getExtension());
@@ -330,7 +334,7 @@ public class Utils {
 			FileUtils.copyFile(new File(file.getLocation().toOSString()), new File(fileCopy.toOSString()));
 		}
 		else {
-			throw new RuntimeException("Could not find the file" + file.getName());
+			throw new RuntimeException("Could not find the " + kind.getExtension() + " file for the class " + importLine);
 		}
 	}
 
