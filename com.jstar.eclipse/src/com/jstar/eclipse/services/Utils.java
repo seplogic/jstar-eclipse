@@ -25,11 +25,13 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
@@ -37,6 +39,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.model.BaseWorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.part.ISetSelectionTarget;
 
 import com.jstar.eclipse.dialogs.JStarRootFolderDialog;
 import com.jstar.eclipse.exceptions.InputFileNotFoundException;
@@ -47,8 +50,10 @@ import com.jstar.eclipse.objects.JavaFilePersistentProperties;
 import com.jstar.eclipse.objects.JavaProject;
 
 public class Utils {
-	
 	private static Utils instance;
+	
+	private static final String PACKAGE_EXPLORER = "org.eclipse.jdt.ui.PackageExplorer";
+	private static final String RESOURCE_NAVIGATOR = "org.eclipse.ui.views.ResourceNavigator";
 	private static final String DEFAULT_TEXT_EDITOR = "org.eclipse.ui.DefaultTextEditor";
 	
 	private Utils() {
@@ -174,8 +179,8 @@ public class Utils {
 		return (IFolder)dialog.getFirstResult();
 	}
 	
-	public void openFileInEditor(final IFile selectedFile) {
-		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();	
+	public void openFileInEditor(final IFile selectedFile, final boolean navigate) {
+		IWorkbenchPage page = getActiveWindow().getActivePage();	
 		IEditorDescriptor desc = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(selectedFile.getName());
 		final String descId = desc == null ? DEFAULT_TEXT_EDITOR : desc.getId();
 		
@@ -184,6 +189,24 @@ public class Utils {
 		} 
 		catch (PartInitException pie) {
 			pie.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+		}
+		
+		if (navigate) {
+			selectFileInNavigator(selectedFile);
+		}
+	}
+	
+	public void selectFileInNavigator(final IResource resource) {
+		final IWorkbenchPage page = getActiveWindow().getActivePage();
+		final IViewPart resourceNavigator = page.findView(RESOURCE_NAVIGATOR);
+		final IViewPart packageExplorer = page.findView(PACKAGE_EXPLORER);
+		
+		if (resourceNavigator instanceof ISetSelectionTarget) {
+			((ISetSelectionTarget) resourceNavigator).selectReveal(new StructuredSelection(resource));
+		}
+		
+		if (packageExplorer instanceof ISetSelectionTarget) {
+			((ISetSelectionTarget) packageExplorer).selectReveal(new StructuredSelection(resource));
 		}
 	}
 	

@@ -29,7 +29,7 @@ public class ContextMenuVerificationConfigAction implements IObjectActionDelegat
 	@Override
 	public void run(IAction action) {	
 		final IFile selectedFile = (IFile) ((IStructuredSelection) this.selection).getFirstElement();
-		Utils.getInstance().openFileInEditor(selectedFile);
+		Utils.getInstance().openFileInEditor(selectedFile, false);
 		VerificationService.getInstance().verifyConfig(new JavaFile(selectedFile), workbenchPart.getSite().getShell());	
 	}
 	

@@ -173,7 +173,7 @@ public class InputFileDialog extends Dialog {
 		specButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				if (specButton.getText().equals(OPEN_TEXT)) {
-					Utils.getInstance().openFileInEditor(selectedFile.getSpecFile());
+					Utils.getInstance().openFileInEditor(selectedFile.getSpecFile(), true);
 					setReturnCode(IDialogConstants.CANCEL_ID);
 					close();
 				}
@@ -249,7 +249,7 @@ public class InputFileDialog extends Dialog {
 		logicButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				if (logicButton.getText().equals(OPEN_TEXT)) {
-					Utils.getInstance().openFileInEditor(selectedFile.getLogicFile());
+					Utils.getInstance().openFileInEditor(selectedFile.getLogicFile(), true);
 					setReturnCode(IDialogConstants.CANCEL_ID);
 					close();
 				}				
@@ -293,7 +293,7 @@ public class InputFileDialog extends Dialog {
 		absButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				if (absButton.getText().equals(OPEN_TEXT)) {
-					Utils.getInstance().openFileInEditor(selectedFile.getAbsFile());
+					Utils.getInstance().openFileInEditor(selectedFile.getAbsFile(), true);
 					setReturnCode(IDialogConstants.CANCEL_ID);
 					close();
 				}

@@ -89,7 +89,7 @@ public class ExternalClassSpecAction implements IObjectActionDelegate {
         	inputFile = Utils.getInstance().createEmptyFile(jStarRootFolder, inputFilePath, inputFileName, kind);
         }
         
-        Utils.getInstance().openFileInEditor(inputFile);
+        Utils.getInstance().openFileInEditor(inputFile, true);
 	}
 
 }
