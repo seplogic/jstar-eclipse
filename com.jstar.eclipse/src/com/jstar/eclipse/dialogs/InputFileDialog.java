@@ -6,6 +6,12 @@
 package com.jstar.eclipse.dialogs;
 
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -16,6 +22,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
@@ -25,6 +32,7 @@ import com.jstar.eclipse.Activator;
 import com.jstar.eclipse.exceptions.InputFileNotFoundException;
 import com.jstar.eclipse.objects.InputFileKind;
 import com.jstar.eclipse.objects.JavaFile;
+import com.jstar.eclipse.services.ConsoleService;
 import com.jstar.eclipse.services.Utils;
 import com.jstar.eclipse.services.JStar.PrintMode;
 
@@ -51,11 +59,13 @@ public class InputFileDialog extends Dialog {
 	private Label genSpecLabel;
 	
 	private String OPEN_TEXT = "Open";
-	private String ADD_TEXT = "Add";
+	private String ADD_TEXT = "Create an empty file";
 
 	private Button logicButton;
 
 	private Button absButton;
+
+	private Button specImportButton;
 
 	public InputFileDialog(Shell parentShell, JavaFile selectedFile) {
 		super(parentShell);
@@ -101,14 +111,14 @@ public class InputFileDialog extends Dialog {
 	    Group group = new Group(component, SWT.SHADOW_IN);
 	    group.setText("Specification");
 	    GridLayout gridLayout = new GridLayout();
-	    gridLayout.numColumns = 3;
+	    gridLayout.numColumns = 4;
 	    gridLayout.horizontalSpacing = 10;
 	    gridLayout.verticalSpacing = 10;
 	    group.setLayout(gridLayout);
 	    
 	    specSource = new Button(group, SWT.RADIO);
 	    specSource.setText("Specification is included in the source file");
-	    specSource.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false, 3, 1));
+	    specSource.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false, 4, 1));
 	    
 	    specSource.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -136,7 +146,7 @@ public class InputFileDialog extends Dialog {
 	    
 	    specSeparate = new Button(group, SWT.RADIO);
 	    specSeparate.setText("Specification is in separate file");
-	    specSeparate.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false, 3, 1));
+	    specSeparate.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false, 4, 1));
 	    
 	    specSeparate.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -178,14 +188,22 @@ public class InputFileDialog extends Dialog {
 					close();
 				}
 				else {			
-					final NewInputFileDialog dialog = new NewInputFileDialog(getShell(), selectedFile, InputFileKind.SPEC);
-					dialog.setBlockOnOpen(true);
-					final int returnValue = dialog.open();
-					
-					if (returnValue == IDialogConstants.OK_ID) {
-						specField.setText(dialog.getInputFile().getProjectRelativePath().toOSString());
-						specButton.setText(OPEN_TEXT);
-					}
+					final IFile inputFile = Utils.getInstance().createEmptyFile(selectedFile, InputFileKind.SPEC);
+					specField.setText(inputFile.getProjectRelativePath().toOSString());
+					specButton.setText(OPEN_TEXT);
+				}
+			}
+		});
+		
+		specImportButton = new Button(group, SWT.PUSH);
+		specImportButton.setText("Import...");
+		specImportButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				final IFile inputFile = importInputFile(InputFileKind.SPEC);
+				
+				if (inputFile != null) {
+					specField.setText(inputFile.getProjectRelativePath().toOSString());
 				}
 			}
 		});
@@ -200,17 +218,39 @@ public class InputFileDialog extends Dialog {
 	    if (selectedFile.isSpecInSource()) {
 	    	specSource.setSelection(true);
 	    	setEnabledSpecSeparate(false);
+	    	setEnabledSpecInSource(true);
 	    }
 	    else {
 	    	specSeparate.setSelection(true);
 	    	setEnabledSpecSeparate(true);
+	    	setEnabledSpecInSource(false);
 	    }
+	}
+	
+	private IFile importInputFile(final InputFileKind inputFileKind) {
+		final String filePath = loadFile();
+		
+		if (StringUtils.isNotBlank(filePath)) {		
+			final File file = new File(filePath);
+			
+			if (file.exists()) {	
+				try {
+					return Utils.getInstance().createFile(selectedFile, inputFileKind, new FileInputStream(file), true);
+				} 
+				catch (FileNotFoundException fnfe) {
+					fnfe.printStackTrace(ConsoleService.getInstance().getConsoleStream());
+				}	
+			}
+		}
+		
+		return null;
 	}
 	
 	private void setEnabledSpecSeparate(boolean enabled) {
 		specField.setEnabled(enabled);
 		specLabel.setEnabled(enabled);
 		specButton.setEnabled(enabled);
+		specImportButton.setEnabled(enabled);
 	}
 	
 	private void setEnabledSpecInSource(boolean enabled) {
@@ -223,7 +263,7 @@ public class InputFileDialog extends Dialog {
 	    Group group = new Group(component, SWT.SHADOW_IN);
 	    group.setText("Input Files");
 	    GridLayout gridLayout = new GridLayout();
-	    gridLayout.numColumns = 3;
+	    gridLayout.numColumns = 4;
 	    gridLayout.horizontalSpacing = 10;
 	    gridLayout.verticalSpacing = 10;
 	    group.setLayout(gridLayout);
@@ -254,14 +294,22 @@ public class InputFileDialog extends Dialog {
 					close();
 				}				
 				else {
-					final NewInputFileDialog dialog = new NewInputFileDialog(getShell(), selectedFile, InputFileKind.LOGIC);
-					dialog.setBlockOnOpen(true);
-					final int returnValue = dialog.open();
-					
-					if (returnValue == IDialogConstants.OK_ID) {
-						logicField.setText(dialog.getInputFile().getProjectRelativePath().toOSString());
-						logicButton.setText(OPEN_TEXT);
-					}
+					final IFile inputFile = Utils.getInstance().createEmptyFile(selectedFile, InputFileKind.LOGIC);
+					logicField.setText(inputFile.getProjectRelativePath().toOSString());
+					logicButton.setText(OPEN_TEXT);			
+				}
+			}
+		});
+		
+		final Button logicImportButton = new Button(group, SWT.PUSH);
+		logicImportButton.setText("Import...");
+		logicImportButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				final IFile inputFile = importInputFile(InputFileKind.LOGIC);
+				
+				if (inputFile != null) {
+					logicField.setText(inputFile.getProjectRelativePath().toOSString());
 				}
 			}
 		});
@@ -298,16 +346,24 @@ public class InputFileDialog extends Dialog {
 					close();
 				}
 				else {
-					final NewInputFileDialog dialog = new NewInputFileDialog(getShell(), selectedFile, InputFileKind.ABS);
-					dialog.setBlockOnOpen(true);
-					final int returnValue = dialog.open();
-					
-					if (returnValue == IDialogConstants.OK_ID) {
-						absField.setText(dialog.getInputFile().getProjectRelativePath().toOSString());
-						absButton.setText(OPEN_TEXT);
-					}
+					final IFile inputFile = Utils.getInstance().createEmptyFile(selectedFile, InputFileKind.ABS);	
+					absField.setText(inputFile.getProjectRelativePath().toOSString());
+					absButton.setText(OPEN_TEXT);
 				}
 				
+			}
+		});
+		
+		final Button absImportButton = new Button(group, SWT.PUSH);
+		absImportButton.setText("Import...");
+		absImportButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				final IFile inputFile = importInputFile(InputFileKind.ABS);
+				
+				if (inputFile != null) {
+					absField.setText(inputFile.getProjectRelativePath().toOSString());
+				}
 			}
 		});
 		
@@ -350,6 +406,12 @@ public class InputFileDialog extends Dialog {
 			verbose.setSelection(true);
 		}
 	}
+	
+    private String loadFile () {
+        final FileDialog fd = new FileDialog(getShell(), SWT.OPEN);
+        fd.setText("Open");      
+        return fd.open();
+    }
 	
     protected void configureShell(Shell shell) {
         super.configureShell(shell);

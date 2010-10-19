@@ -214,28 +214,32 @@ public class Utils {
 		byte[] bytes = "".getBytes();
 		final InputStream source = new ByteArrayInputStream(bytes);
 		
-		return createFile(selectedFile, inputFile, source);
+		return createFile(selectedFile, inputFile, source, false);
 	}
 	
 	// TODO: refactor
-	public IFile createFile(final JavaFile selectedFile, final InputFileKind inputFile, final InputStream source) {		
+	public IFile createFile(final JavaFile selectedFile, final InputFileKind inputFile, final InputStream source, final boolean overwrite) {		
 		IFile file = null;
+		IFile oldFile = null;
 		
 		try {
-			selectedFile.getInputFile(inputFile);
+			oldFile = selectedFile.getInputFile(inputFile);
 		}
 		catch (InputFileNotFoundException ifnfe) {
 			file = ifnfe.getInputFile();
 		}
 		
-		if (file == null) {
-			// File already exists
-			return selectedFile.getInputFile(inputFile);
+		if (oldFile != null && !overwrite) {
+			return oldFile;
+		}
+
+		if (oldFile != null && overwrite) {
+			file = oldFile;
 		}
 	
 		IFolder folder = selectedFile.getJavaProject().getJStarRootFolder();
 		IPath path = file.getProjectRelativePath().removeFirstSegments(folder.getProjectRelativePath().segmentCount());
-		file = createFile(folder, path.removeLastSegments(1), path.removeFileExtension().lastSegment(), inputFile, source);
+		file = createFile(folder, path.removeLastSegments(1), path.removeFileExtension().lastSegment(), inputFile, source, overwrite);
 		
 		return file;
 	}
@@ -244,22 +248,27 @@ public class Utils {
 		byte[] bytes = "".getBytes();
 		final InputStream source = new ByteArrayInputStream(bytes);
 		
-		return createFile(jStarRootFolder, inputFilePath, inputFileName, kind, source);
+		return createFile(jStarRootFolder, inputFilePath, inputFileName, kind, source, false);
 	}
 	
 	
-	public IFile createFile(final IFolder jStarRootFolder, IPath inputFilePath, final String inputFileName, final InputFileKind kind, final InputStream source) {
+	public IFile createFile(final IFolder jStarRootFolder, IPath inputFilePath, final String inputFileName, final InputFileKind kind, final InputStream source, final boolean overwrite) {
 		try {
 			final IFolder folder = createFolder(jStarRootFolder, inputFilePath);	
 			IFile inputFile = folder.getFile(new Path(inputFileName).addFileExtension(kind.getExtension()));
 			inputFile.refreshLocal(0, null);
 			
-			if (inputFile.exists()) {
+			if (inputFile.exists() && !overwrite) {
 				// File already exists
 				return inputFile;
 			}
 			
-			inputFile.create(source, IResource.NONE, null);
+			if (inputFile.exists() && overwrite) {
+				inputFile.setContents(source, IResource.NONE, null);
+			}
+			else {
+				inputFile.create(source, IResource.NONE, null);
+			}
 			
 			return inputFile;
 		} 
