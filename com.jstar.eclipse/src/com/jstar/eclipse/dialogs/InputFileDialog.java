@@ -59,7 +59,7 @@ public class InputFileDialog extends Dialog {
 	private Label genSpecLabel;
 	
 	private String OPEN_TEXT = "Open";
-	private String ADD_TEXT = "Create an empty file";
+	private String ADD_TEXT = "New";
 
 	private Button logicButton;
 
@@ -191,6 +191,7 @@ public class InputFileDialog extends Dialog {
 					final IFile inputFile = Utils.getInstance().createEmptyFile(selectedFile, InputFileKind.SPEC);
 					specField.setText(inputFile.getProjectRelativePath().toOSString());
 					specButton.setText(OPEN_TEXT);
+					specButton.pack();
 				}
 			}
 		});
@@ -296,7 +297,8 @@ public class InputFileDialog extends Dialog {
 				else {
 					final IFile inputFile = Utils.getInstance().createEmptyFile(selectedFile, InputFileKind.LOGIC);
 					logicField.setText(inputFile.getProjectRelativePath().toOSString());
-					logicButton.setText(OPEN_TEXT);			
+					logicButton.setText(OPEN_TEXT);	
+					logicButton.pack();
 				}
 			}
 		});
@@ -349,6 +351,7 @@ public class InputFileDialog extends Dialog {
 					final IFile inputFile = Utils.getInstance().createEmptyFile(selectedFile, InputFileKind.ABS);	
 					absField.setText(inputFile.getProjectRelativePath().toOSString());
 					absButton.setText(OPEN_TEXT);
+					absButton.pack();
 				}
 				
 			}
