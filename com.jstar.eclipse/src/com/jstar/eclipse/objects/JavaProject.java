@@ -39,7 +39,6 @@ public class JavaProject {
 		JavaFilePersistentProperties.setJStarRootFolder(this, jStarFolder.getProjectRelativePath().toOSString());
 	}
 	
-	//TODO: make generated directory not to be a workspace resource
 	public IFolder getGeneratedDir() {
 		final IFolder jStarRootFolder = getJStarRootFolder();	
 		final IFolder generated = jStarRootFolder.getFolder(GENERATED);

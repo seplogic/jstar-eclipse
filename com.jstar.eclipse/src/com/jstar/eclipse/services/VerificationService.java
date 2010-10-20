@@ -16,7 +16,7 @@ import com.jstar.eclipse.exceptions.ConfigurationException;
 import com.jstar.eclipse.exceptions.FolderNotFoundException;
 import com.jstar.eclipse.exceptions.InputFileNotFoundException;
 import com.jstar.eclipse.exceptions.NoJStarRootFolderException;
-import com.jstar.eclipse.exceptions.RequiredFileNotFoundException;
+import com.jstar.eclipse.exceptions.RequiredResourceNotFoundException;
 import com.jstar.eclipse.jobs.VerificationJob;
 import com.jstar.eclipse.objects.JavaFile;
 import com.jstar.eclipse.services.JStar.PrintMode;
@@ -49,7 +49,7 @@ public class VerificationService {
 		try {
 			checkRequiredFiles(selectedFile);
 		} 
-		catch (RequiredFileNotFoundException e) {
+		catch (RequiredResourceNotFoundException rrnfe) {
 			return;
 		}
 		
@@ -58,12 +58,20 @@ public class VerificationService {
 		final int returnValue = dialog.open();
 		
 		if (returnValue == IDialogConstants.OK_ID) {
-			//TODO: check if specification file exists if dialog.isSeparateSpec == false
+			try {
+				checkInputFiles(selectedFile);
+			}
+			catch (RequiredResourceNotFoundException rfnfe) {
+				ConsoleService.getInstance().printErrorMessage("Please check if all input files are specified. Could not find " + rfnfe.getResource().getProjectRelativePath().getFileExtension() + " file.");
+				verifyConfig(selectedFile, shell);
+				return;
+			} 
+			
 			executeJStar(selectedFile, !dialog.isSeparateSpec(), dialog.getPrintMode());
 		}
 	}
 	
-	private void checkRequiredFiles(JavaFile selectedFile) throws RequiredFileNotFoundException {
+	private void checkRequiredFiles(JavaFile selectedFile) throws RequiredResourceNotFoundException {
 		try {
 			selectedFile.getJavaProject().getJStarRootFolder();
 		}
@@ -74,7 +82,7 @@ public class VerificationService {
 				selectedFile.getJavaProject().setJStarRootFolder(folder);
 			}
 			
-			throw new RequiredFileNotFoundException();
+			throw new RequiredResourceNotFoundException(folder);
 		}
 		
 		try {
@@ -90,13 +98,13 @@ public class VerificationService {
 		}
 	}
 	
-	private void checkInputFiles(JavaFile selectedFile) throws RequiredFileNotFoundException {
+	private void checkInputFiles(JavaFile selectedFile) throws RequiredResourceNotFoundException {
 		if (!selectedFile.isSpecInSource()) {
 			try {
 				selectedFile.getSpecFile();
 			}
 			catch (InputFileNotFoundException ifnfe) {
-				throw new RequiredFileNotFoundException();
+				throw new RequiredResourceNotFoundException(ifnfe.getInputFile());
 			}
 		}
 		
@@ -105,7 +113,7 @@ public class VerificationService {
 			selectedFile.getAbsFile();
 		}
 		catch (InputFileNotFoundException ifnfe) {
-			throw new RequiredFileNotFoundException();
+			throw new RequiredResourceNotFoundException(ifnfe.getInputFile());
 		}
 	}
 	
@@ -120,7 +128,7 @@ public class VerificationService {
 		try {
 			checkRequiredFiles(selectedFile);
 		} 
-		catch (RequiredFileNotFoundException e) {
+		catch (RequiredResourceNotFoundException rrnfe) {
 			return;
 		}
 		
@@ -130,7 +138,7 @@ public class VerificationService {
 		try {
 			checkInputFiles(selectedFile);
 		}
-		catch (RequiredFileNotFoundException rfnfe) {
+		catch (RequiredResourceNotFoundException rrnfe) {
 			verifyConfig(selectedFile, shell);
 			return;
 		}

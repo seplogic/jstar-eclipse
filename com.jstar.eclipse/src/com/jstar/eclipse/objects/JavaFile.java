@@ -60,7 +60,6 @@ public class JavaFile {
 		return outputFolder;
 	}
 	
-	//TODO: change generated directory not to be a resource in workspace
 	public IFolder getGeneratedDir() {
 		final IFolder folder = getJavaProject().getGeneratedDir().getFolder(getOutputRelativePath());
 		
