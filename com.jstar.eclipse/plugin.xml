@@ -35,6 +35,14 @@
                style="push"
                tooltip="%action.tooltip.0">
          </action>
+         <action
+               class="com.jstar.eclipse.actions.ExternalClassSpecFileAction"
+               enablesFor="1"
+               id="com.jstar.eclipse.external.class.add.file"
+               label="Add specification for the external class..."
+               menubarPath="com.jstar.eclipse.context.menu/com.jstar.eclipse.separator1"
+               style="push">
+         </action>
       </objectContribution>
       <objectContribution
             adaptable="false"
@@ -89,6 +97,10 @@
             id="com.jstar.eclipse.verification.config"
             name="Verify with jStar Configurations...">
       </command>
+      <command
+            id="com.jstar.eclipse.command.external.class.spec"
+            name="Add specification for the external class...">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -106,6 +118,10 @@
             locationURI="menu:com.jstar.eclipse.verification">
          <command
                commandId="com.jstar.eclipse.verification.config"
+               style="push">
+         </command>
+         <command
+               commandId="com.jstar.eclipse.command.external.class.spec"
                style="push">
          </command>
       </menuContribution>
@@ -143,6 +159,10 @@
                </adapt>
             </with>
          </activeWhen>
+      </handler>
+      <handler
+            class="com.jstar.eclipse.handlers.ExternalClassSpecHandler"
+            commandId="com.jstar.eclipse.command.external.class.spec">
       </handler>
    </extension>
    <extension

@@ -1,27 +1,31 @@
 package com.jstar.eclipse.actions;
 
-import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
-import com.jstar.eclipse.objects.JavaProject;
+import com.jstar.eclipse.objects.JavaFile;
 import com.jstar.eclipse.services.ResourceService;
 
-public class ExternalClassSpecAction implements IObjectActionDelegate {
+public class ExternalClassSpecFileAction implements IObjectActionDelegate {
 	private ISelection selection;
 
-	public ExternalClassSpecAction() {
+	public ExternalClassSpecFileAction() {
 		super();
 	}
 
 	@Override
+	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+	}
+
+	@Override
 	public void run(IAction action) {
-		final IJavaProject selectedProject = (IJavaProject) ((IStructuredSelection) this.selection).getFirstElement();
-		final JavaProject project = new JavaProject(selectedProject);
-		ResourceService.getInstance().addExternalClassSpec(project);
+		final IFile selectedFile = (IFile) ((IStructuredSelection) this.selection).getFirstElement();
+		final JavaFile javaFile = new JavaFile(selectedFile);
+		ResourceService.getInstance().addExternalClassSpec(javaFile.getJavaProject());
 	}
 
 	@Override
@@ -29,7 +33,4 @@ public class ExternalClassSpecAction implements IObjectActionDelegate {
 		this.selection = selection;
 	}
 
-	@Override
-	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
-	}
 }
