@@ -14,6 +14,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -22,6 +23,7 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
 import com.jstar.eclipse.Activator;
+import com.jstar.eclipse.exceptions.NoJStarRootFolderException;
 import com.jstar.eclipse.objects.InputFileKind;
 import com.jstar.eclipse.objects.JavaProject;
 import com.jstar.eclipse.services.ConsoleService;
@@ -44,10 +46,43 @@ public class ExternalClassSpecAction implements IObjectActionDelegate {
 	@Override
 	public void run(IAction action) {
 		final IJavaProject selectedProject = (IJavaProject) ((IStructuredSelection) this.selection).getFirstElement();
-		final InputDialog dlg = new InputDialog(workbenchPart.getSite().getShell(), "External class specification", "Enter class name", "", null);
 		
-        if (dlg.open() == Window.OK) {
-        	final String className = dlg.getValue();
+		final JavaProject project = new JavaProject(selectedProject);
+		
+		IFolder jStarRootFolder;
+		
+		try {
+			 jStarRootFolder = project.getJStarRootFolder();
+		}
+		catch (NoJStarRootFolderException njsrfe) {
+			jStarRootFolder = Utils.getInstance().specifyJStarRootFolder(project);
+			
+			if (jStarRootFolder != null) {
+				project.setJStarRootFolder(jStarRootFolder);
+			}
+			else {	
+				return;
+			}
+		}
+		
+		final IInputValidator validator = new IInputValidator() {
+	        public String isValid(String newText) {
+	        	if (StringUtils.isEmpty(newText)) {
+	        		return "Enter class name, e.g. java.lang.Object";
+	        	}
+	          	else return null;
+	        }
+	      };
+		
+		final InputDialog dialog = new InputDialog(workbenchPart.getSite().getShell(), 
+				"External class specification",
+				"An empty spec, logic and abs file will be created for your class if they do not already exist in this project.",
+				"java.lang.Object", 
+				validator
+		);
+		
+        if (dialog.open() == Window.OK) {
+        	final String className = dialog.getValue();
         	
         	try {
         		final IPath sourcePath = new Path(StringUtils.replace(className, ".", File.separator));
@@ -60,10 +95,6 @@ public class ExternalClassSpecAction implements IObjectActionDelegate {
 		        	return;
 		        }
 		        
-		        final JavaProject project = new JavaProject(selectedProject);
-		        
-		        //TODO: check if exists
-		        final IFolder jStarRootFolder = project.getJStarRootFolder();
 		        final IPath inputFilePath = sourcePath.removeLastSegments(1);
 		        final String inputFileName = sourcePath.lastSegment();
 		        

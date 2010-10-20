@@ -137,6 +137,7 @@ public class Utils {
 		return null;
 	}
 
+	// TODO: set preference of selected root folder here
 	public IFolder specifyJStarRootFolder(JavaProject javaProject) {
 		final IProject project = javaProject.getProject().getProject();
 		
