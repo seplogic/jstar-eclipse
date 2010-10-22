@@ -178,7 +178,13 @@ public class Utils {
 			return null;
 		}
 		
-		return (IFolder)dialog.getFirstResult();
+		final Object result = dialog.getFirstResult();
+		
+		if (result instanceof IFolder) {
+			return (IFolder) result;
+		}
+		
+		return null;
 	}
 	
 	public void openFileInEditor(final IFile selectedFile, final boolean navigate) {	
