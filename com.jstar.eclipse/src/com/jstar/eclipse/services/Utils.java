@@ -55,6 +55,7 @@ public class Utils {
 	private static final String PACKAGE_EXPLORER = "org.eclipse.jdt.ui.PackageExplorer";
 	private static final String RESOURCE_NAVIGATOR = "org.eclipse.ui.views.ResourceNavigator";
 	private static final String DEFAULT_TEXT_EDITOR = "org.eclipse.ui.DefaultTextEditor";
+	public static final String BROWSER_EDITOR = "org.eclipse.ui.browser.editor";
 	
 	private Utils() {
 	}
@@ -180,10 +181,15 @@ public class Utils {
 		return (IFolder)dialog.getFirstResult();
 	}
 	
-	public void openFileInEditor(final IFile selectedFile, final boolean navigate) {
-		IWorkbenchPage page = getActiveWindow().getActivePage();	
+	public void openFileInEditor(final IFile selectedFile, final boolean navigate) {	
 		IEditorDescriptor desc = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(selectedFile.getName());
 		final String descId = desc == null ? DEFAULT_TEXT_EDITOR : desc.getId();
+		
+		openFileInEditor(selectedFile, descId, navigate);
+	}
+	
+	public void openFileInEditor(final IFile selectedFile, final String descId, final boolean navigate) {
+		IWorkbenchPage page = getActiveWindow().getActivePage();	
 		
 		try {
 			page.openEditor(new FileEditorInput(selectedFile), descId);

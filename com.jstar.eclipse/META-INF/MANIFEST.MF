@@ -21,5 +21,6 @@ Bundle-ClassPath: lib/sootclasses-2.4.0.jar,
  lib/jstar_processing.jar
 Import-Package: org.apache.commons.lang,
  org.eclipse.jdt.core,
+ org.eclipse.jdt.ui.wizards,
  org.eclipse.ui.console,
  org.eclipse.ui.part

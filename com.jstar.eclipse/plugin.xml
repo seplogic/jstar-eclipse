@@ -182,5 +182,22 @@
             objectClass="org.eclipse.jdt.core.IJavaProject">
       </page>
    </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="com.jstar.eclipse.jstar.examples"
+            name="jStar examples"
+            parentCategory="org.eclipse.ui.Examples">
+      </category>
+      <wizard
+            category="org.eclipse.ui.Examples/com.jstar.eclipse.jstar.examples"
+            class="com.jstar.eclipse.wizard.Popl2008Wizard"
+            finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
+            hasPages="true"
+            id="com.jstar.eclipse.jstar.examples.popl2008"
+            name="POPL2008 Example"
+            project="true">
+      </wizard>
+   </extension>
 
 </plugin>

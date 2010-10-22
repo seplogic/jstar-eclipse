@@ -40,11 +40,11 @@ public class JavaFilePersistentProperties {
 	}
 	
 	public static boolean isSpecInSourceFile(final IResource resource) {
-		if ("true".equalsIgnoreCase(getProperty(resource, SPEC_IN_SOURCE_FILE))) {
-			return true;
+		if ("false".equalsIgnoreCase(getProperty(resource, SPEC_IN_SOURCE_FILE))) {
+			return false;
 		}
 		
-		return false;
+		return true;
 	}
 	
 	public static void setSpecInSourceFile(final JavaFile file, boolean specInSourceFile) {
