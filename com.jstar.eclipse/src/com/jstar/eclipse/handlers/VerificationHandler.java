@@ -16,7 +16,7 @@ public class VerificationHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		VerificationService.getInstance().verify(Utils.getInstance().getFileFromActiveEditor(null), Utils.getInstance().getActiveWindow().getShell());
+		VerificationService.getInstance().verify(Utils.getInstance().getJavaFileFromActiveEditor(null), Utils.getInstance().getActiveWindow().getShell());
 		return null;
 	}
 

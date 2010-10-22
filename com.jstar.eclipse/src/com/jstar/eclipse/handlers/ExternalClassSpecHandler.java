@@ -11,7 +11,7 @@ public class ExternalClassSpecHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		ResourceService.getInstance().addExternalClassSpec(Utils.getInstance().getFileFromActiveEditor(null).getJavaProject());
+		ResourceService.getInstance().addExternalClassSpec(Utils.getInstance().getJavaFileFromActiveEditor(null).getJavaProject());
 		return null;
 	}
 

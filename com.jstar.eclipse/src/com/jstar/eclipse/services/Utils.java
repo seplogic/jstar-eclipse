@@ -67,7 +67,7 @@ public class Utils {
 		return instance;
 	}
 	
-	public JavaFile getFileFromActiveEditor(IWorkbenchWindow window) {
+	public IFile getFileFromActiveEditor(IWorkbenchWindow window) {
 		if (window == null) {
 			window = getActiveWindow();
 		}
@@ -80,7 +80,11 @@ public class Utils {
 			throw new NullPointerException();
 		}
 		
-		return new JavaFile(selectedFile);
+		return selectedFile;
+	}
+	
+	public JavaFile getJavaFileFromActiveEditor(IWorkbenchWindow window) {
+		return new JavaFile(getFileFromActiveEditor(window));
 	}
 	
 	public IWorkbenchWindow getActiveWindow() {
