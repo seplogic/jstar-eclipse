@@ -49,9 +49,9 @@ Accept the terms of the license agreement and click {\bf Finish}.
 
 \section{Configuration}
 
-\subsection{Windows with cygwin}
+\subsection{Windows}
 
-Go to Windows $\rightarrow$ Preferences $\rightarrow$ jStar and set the required directories.\\
+Go to Window $\rightarrow$ Preferences $\rightarrow$ jStar and set the required directories.\\
 
 \includegraphics[width=4in]{images/preferences.jpg}\\
 
@@ -61,18 +61,29 @@ rt.jar could be found in jdk1.6.0/jre/lib/. It is required library for soot. The
 rt.jar could be found in jdk1.6.0/jre/lib/. It is required library for soot. The plugin will try to find it automatically. 
 
 \subsection{Mac}
-classes.jar and ui.jar cound be found in \\ /System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Classes/.  They are required libraries for soot. The plugin will try to find them automatically. 
+classes.jar and ui.jar could be found in \\ /System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Classes/.  They are required libraries for soot. The plugin will try to find them automatically. 
+
+\section {Structure}
+
+\subsection{jStar root folder}
+\label{sec:jstarrootfolder}
+
+All jStar input files (specification, logic rules, abstraction rules, generated jimple files) are stored in jStar root folder. To specify jStar root folder open project context menu, select {\bf Properties} $\rightarrow$ {\bf jStar}.\\
+
+\includegraphics[width=4in]{images/rootFolder.jpg}
 
 \section{Verification}
 You can verify source file by selecting \texttt{Verify with jStar} from the context menu or the main toolbar. 
 
-By selecting \texttt{Verify with jStar Configurations...}, you can indicate the location of specification, logic and abstraction rules.\\
+By selecting \texttt{Verify with jStar Configurations...}, you can indicate specifications, logic and abstraction rules.\\ 
 
-\includegraphics[width=4in]{images/verificationWindow.jpg}
+\includegraphics[width=4in]{images/verificationWindow.jpg}\\
+
+In the window above you can create a new empty file or import a file for specification, logic and abstraction rules. The location depends on the location of the source file and could not be changed. Files are  are contained in jStar root folder \ref{sec:jstarrootfolder} and locations shown are relative to the project.
 
 \subsection*{Specification in source file}
 
-If you want to write specification in the source file, you need to add annotations.jar (can be found in com.jstar.eclipse/jar files/annotations) to your project Java Build Path. More information about annotations could be found in \ref{sec:annotationprocessing} .
+If you want to write specification in the source file, you need to add annotations.jar (can be found in com.jstar.eclipse.annotations / jar file) to your project Java Build Path. More information about annotations could be found in \ref{sec:annotationprocessing} .
 
 \subsection* {Verification errors}
 
@@ -88,7 +99,7 @@ In case there are some verification errors, you can see error messages in consol
 \subsection*{Annotations}
 
 \begin{itemize}
-\item \texttt{@Import} has one element \texttt{String[] value}. This annotation can be used to annotate only type declarations.
+\item \texttt{@Import} has one element \texttt{String[] value}. You need to write a name of the class (including package declaration) which specification you want to import. This annotation can be used to annotate only type declarations.
 \item \texttt{@Predicate} is used for \texttt{define} and \texttt{export} statements. It has three elements: \texttt{String predicate}, \texttt{String formula}, \texttt{DefinitionType type}. \texttt{DefinitionType} is enum with two values \texttt{Define} and \texttt{Export}.  The default value of type is \texttt{DefinitionType.Define}. This annotation can be used to annotate only type declarations.
 \item \texttt{@Predicates} is used if you want to have more than one  \texttt{define} and/or \texttt{export} statements. It has one element \texttt{Predicate[] value}. This annotation can be used to annotate only type declarations.
 \item \texttt{@InitSpec} is a (dynamic / both static and dynamic) specification for constructor which is not explicitly defined in the source code. It has two elements: \texttt{String pre}, \texttt{String post}. This annotation can be used to annotate only type declarations.
@@ -107,20 +118,20 @@ Examples of annotations in the source code:\\
 Annotation in source file & Generated specification file \\
 \hline
 \begin{verbatim}
-@Import("Spec.spec")
+@Import("java.lang.Object")
+\end{verbatim}
+& 
+\begin{verbatim}
+import("java/lang/Object.spec");
+\end{verbatim}
+\\
+\begin{verbatim}
+@Import({"Spec", "java.lang.Object"})
 \end{verbatim}
 & 
 \begin{verbatim}
 import("Spec.spec");
-\end{verbatim}
-\\
-\begin{verbatim}
-@Import({"Spec1.spec", "Spec2.spec"})
-\end{verbatim}
-& 
-\begin{verbatim}
-import("Spec1.spec");
-import("Spec2.spec");
+import("java/lang/Object.spec");
 \end{verbatim}
 \\
 \begin{verbatim}
@@ -318,7 +329,7 @@ You can write specifications in your java source file. By selecting an option ``
 You can generate a specification file from your java source file with annotations using command line:\\
 {\bf javac}\\
 \hspace*{20 pt}{\bf-proc:only} \\
-\hspace*{20 pt}{\bf -cp} ``.;jstar\_processing.jar;commons-io-1.4.jar;annotations.jar" \\
+\hspace*{20 pt}{\bf -cp} ``.;jstar\_processing.jar;commons-io-1.4.jar;commons-lang-2.5.jar;annotations.jar" \\
 \hspace*{20 pt}{\bf -d} . \\
 \hspace*{20 pt}{\bf -processor} com.jstar.eclipse.processing.SpecAnnotationProcessor \\
 \hspace*{20 pt}{\it MyClass.java}\\\\
@@ -328,7 +339,7 @@ You can generate a specification file from your java source file with annotation
 \hspace*{20pt} Specifies the classpath. As well as specifying the classpath to the classes MyClass is referencing to, you need to add the following jar files:
 \begin{itemize}
 \item jstar\_processing.jar \\ where the processor {\bf com.jstar.eclipse.processing.SpecAnnotationProcessor} lives in.
-\item commons-io-1.4.jar \\ required library for annotation processing.
+\item commons-io-1.4.jar, commons-lang-2.5.jar \\ required libraries for annotation processing.
 \item annotations.jar \\ where the specification annotations live in.
 \end{itemize}
 {\bf -d} \\ 
