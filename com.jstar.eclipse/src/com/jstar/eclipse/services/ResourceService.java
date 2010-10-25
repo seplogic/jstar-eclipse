@@ -85,9 +85,9 @@ public class ResourceService {
 		        final IPath inputFilePath = sourcePath.removeLastSegments(1);
 		        final String inputFileName = sourcePath.lastSegment();
 		        
-		        createInputFile(jStarRootFolder, inputFilePath, inputFileName, InputFileKind.SPEC);
-		        createInputFile(jStarRootFolder, inputFilePath, inputFileName, InputFileKind.LOGIC);
 		        createInputFile(jStarRootFolder, inputFilePath, inputFileName, InputFileKind.ABS);
+		        createInputFile(jStarRootFolder, inputFilePath, inputFileName, InputFileKind.LOGIC);
+		        createInputFile(jStarRootFolder, inputFilePath, inputFileName, InputFileKind.SPEC);
 		    } 
         	catch (JavaModelException jme) {
 				jme.printStackTrace(ConsoleService.getInstance().getConsoleStream());
