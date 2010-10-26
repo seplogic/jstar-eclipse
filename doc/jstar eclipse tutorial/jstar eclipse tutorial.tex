@@ -35,16 +35,16 @@ For more information go to \href{http://wiki.eclipse.org/Eclipse.ini}{http://wik
 \end{itemize}
 Two ways:
 \begin{enumerate}
-\item Update site (Recommended). Go to {\bf  Help} $\rightarrow$ {\bf Install New Software...}. Click {\bf Add...}  and type in the name and update site for the plugin. \\ The update site for the jStar Eclipse Plug-in is \\ {\bf http://github.com/da319/jStar-eclipse/raw/master/com.jstar.eclipse.update.site/}\\
+\item Update site (Recommended). Go to {\bf  Help} $\rightarrow$ {\bf Install New Software...}. Click {\bf Add...}  and type in the name and update site for the plug-in. \\ The update site for the jStar Eclipse Plug-in is \\ {\bf http://github.com/da319/jStar-eclipse/raw/master/com.jstar.eclipse.update.site/}\\
 Press {\bf OK}.\\
 Uncheck {\bf Group items by category}.\\
 \includegraphics[width=4in]{images/updateSite1.jpg}\\\\
 The jStar Eclipse Plug-in should appear, as the following figure shows.\\\\
 \includegraphics[width=4in]{images/updateSite2.jpg}\\\\
-Select the plugin and click {\bf Next}.\\
-Click {\bf Next} in the following dialog.
+Select the plug-in and click {\bf Next}.\\
+Click {\bf Next} in the following page.
 Accept the terms of the license agreement and click {\bf Finish}.
-\item Manually. Add the latest plugin jar file\\ \textbf{com.jstar.eclipse.update.site/plugins/com.jstar.eclipse\_1.0.0.x.jar} to \texttt{eclipse/dropins/} folder and restart Eclipse.
+\item Manually. Add the latest plug-in jar file\\ \textbf{com.jstar.eclipse.update.site/plugins/com.jstar.eclipse\_1.0.0.x.jar} to \texttt{eclipse/dropins/} folder and restart Eclipse.
 \end{enumerate}
 
 \section{Configuration}
@@ -55,13 +55,13 @@ Go to Window $\rightarrow$ Preferences $\rightarrow$ jStar and set the required 
 
 \includegraphics[width=4in]{images/preferences.jpg}\\
 
-rt.jar could be found in jdk1.6.0/jre/lib/. It is required library for soot. The plugin will try to find it automatically. 
+rt.jar could be found in jdk1.6.0/jre/lib/. It is required library for soot. The plug-in will try to find it automatically. 
 
 \subsection{Linux}
-rt.jar could be found in jdk1.6.0/jre/lib/. It is required library for soot. The plugin will try to find it automatically. 
+rt.jar could be found in jdk1.6.0/jre/lib/. It is required library for soot. The plug-in will try to find it automatically. 
 
 \subsection{Mac}
-classes.jar and ui.jar could be found in \\ /System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Classes/.  They are required libraries for soot. The plugin will try to find them automatically. 
+classes.jar and ui.jar could be found in \\ /System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Classes/.  They are required libraries for soot. The plug-in will try to find them automatically. 
 
 \section {Structure}
 
@@ -72,7 +72,20 @@ All jStar input files (specification, logic rules, abstraction rules, generated 
 
 \includegraphics[width=4in]{images/rootFolder.jpg}
 
+\subsection{External classes}
+\label{sec:externalclasses}
+
+To add a specification for an external class (e.g. java.lang.Object), select {\bf Add specification for the external class...}. This command can be found in 
+\begin{itemize}
+\item The context menu of the java project
+\item The context menu of the java source file $\rightarrow$ {\bf jStar Verification} 
+\item In the main toolbar
+
+\includegraphics[width=4in]{images/toolbarExternalClass.jpg}\\
+\end{itemize}
+This will create and open spec, logic and abs files where you can write specification, logic and abstraction rules. These files will be created in jStar root folder depending on the package of the class. For example, if the jStar root folder is {\bf jStar} and you are creating specification for java.lang.Object, input files will be created in {\bf jStar/java/lang/}.
 \section{Verification}
+\label{sec:verification}
 You can verify source file by selecting \texttt{Verify with jStar} from the context menu or the main toolbar. 
 
 By selecting \texttt{Verify with jStar Configurations...}, you can indicate specifications, logic and abstraction rules.\\ 
@@ -81,11 +94,12 @@ By selecting \texttt{Verify with jStar Configurations...}, you can indicate spec
 
 In the window above you can create a new empty file or import a file for specification, logic and abstraction rules. The location depends on the location of the source file and could not be changed. Files are  are contained in jStar root folder \ref{sec:jstarrootfolder} and locations shown are relative to the project.
 
-\subsection*{Specification in source file}
+\subsection{Specification in source file}
+\label{sec:specinsource}
 
 If you want to write specification in the source file, you need to add annotations.jar (can be found in com.jstar.eclipse.annotations / jar file) to your project Java Build Path. More information about annotations could be found in \ref{sec:annotationprocessing} .
 
-\subsection* {Verification errors}
+\subsection {Verification errors}
 
 In case there are some verification errors, you can see error messages in console. The lines in source code where the problem appeared are annotated as squiggly marks.\\
 
@@ -103,13 +117,13 @@ In case there are some verification errors, you can see error messages in consol
 \item \texttt{@Predicate} is used for \texttt{define} and \texttt{export} statements. It has three elements: \texttt{String predicate}, \texttt{String formula}, \texttt{DefinitionType type}. \texttt{DefinitionType} is enum with two values \texttt{Define} and \texttt{Export}.  The default value of type is \texttt{DefinitionType.Define}. This annotation can be used to annotate only type declarations.
 \item \texttt{@Predicates} is used if you want to have more than one  \texttt{define} and/or \texttt{export} statements. It has one element \texttt{Predicate[] value}. This annotation can be used to annotate only type declarations.
 \item \texttt{@InitSpec} is a (dynamic / both static and dynamic) specification for constructor which is not explicitly defined in the source code. It has two elements: \texttt{String pre}, \texttt{String post}. This annotation can be used to annotate only type declarations.
-\item \texttt{@InitSpecs} is (dynamic / both static and dynamic) specifications which are conjuncted with \texttt{also} for constructor which is not explicitly defined in the source code. It has one element \texttt{InitSpec[] value}. This annotation can be used to annotate only type declarations.
+\item \texttt{@InitSpecs} is (dynamic / both static and dynamic) specifications which are combined with \texttt{also} for constructor which is not explicitly defined in the source code. It has one element \texttt{InitSpec[] value}. This annotation can be used to annotate only type declarations.
 \item \texttt{@InitSpecStatic} is a static specification for constructor which is not explicitly defined in the source code. It has two elements: \texttt{String pre}, \texttt{String post}. This annotation can be used to annotate only type declarations.
-\item \texttt{@InitSpecsStatic} is static specifications which are conjuncted with \texttt{also} for constructor which is not explicitly defined in the source code. It has one element \texttt{InitSpecStatic[] value}. This annotation can be used to annotate only type declarations.
+\item \texttt{@InitSpecsStatic} is static specifications which are combined with \texttt{also} for constructor which is not explicitly defined in the source code. It has one element \texttt{InitSpecStatic[] value}. This annotation can be used to annotate only type declarations.
 \item \texttt{@Spec} is a (dynamic / both static and dynamic) specification for a method or a constructor. It has two elements: \texttt{String pre}, \texttt{String post}. This annotation can be used to annotate only method and constructor declarations.
-\item \texttt{@Specs} is (dynamic / both static and dynamic) specifications which are conjuncted with \texttt{also} for a method or a constructor. It has one element: \texttt{Spec[] value}. This annotation can be used to annotate only method and constructor declarations.
+\item \texttt{@Specs} is (dynamic / both static and dynamic) specifications which are combined with \texttt{also} for a method or a constructor. It has one element: \texttt{Spec[] value}. This annotation can be used to annotate only method and constructor declarations.
 \item \texttt{@SpecStatic} is a static specification for a method or a constructor. It has two elements: \texttt{String pre}, \texttt{String post}. This annotation can be used to annotate only method and constructor declarations.
-\item \texttt{@SpecsStatic} is static specifications which are conjuncted with \texttt{also} for a method or a constructor. It has one element: \texttt{SpecStatic[] value}. This annotation can be used to annotate only method and constructor declarations.
+\item \texttt{@SpecsStatic} is static specifications which are combined with \texttt{also} for a method or a constructor. It has one element: \texttt{SpecStatic[] value}. This annotation can be used to annotate only method and constructor declarations.
 \end{itemize}
 
 
@@ -320,7 +334,7 @@ void <init>() static :
 \end{verbatim}
 \end{longtable}
 
-\subsection*{Eclipse plugin}
+\subsection*{Eclipse plug-in}
 
 You can write specifications in your java source file. By selecting an option ``Specification is included in the source file" in verification configuration, the specification file will be generated from your annotations. This specification file will be used to verify your program.
 
@@ -348,4 +362,28 @@ You can generate a specification file from your java source file with annotation
 \hspace*{20 pt}The name of annotation processor. \\
 {\it MyClass.java}\\
 \hspace*{20 pt} One or more source files with annotations.
+
+\section{Example}
+
+\subsection{com.jstar.eclipse.examples.popl2008}
+To create a simple Cell/Recell/DCell example, go to\\ {\bf File} $\rightarrow$ {\bf New} $\rightarrow$ {\bf Example...}.\\
+
+\includegraphics[width=4in]{images/popl2008Example.jpg}\\
+
+Select {\bf jStar examples}  $\rightarrow$ {\bf POPL2008 Example} as shown in the picture above. 
+
+\subsection{New Project}
+
+There are basic steps to create and configure your project to be able to verify with jStar:
+
+\begin{enumerate}
+\item Create a java project.
+\item Create some source files.
+\item Add annotations.jar to the project Java Build Path \ref{sec:specinsource}.
+\item Set jStar root folder in project properties \ref{sec:jstarrootfolder}.
+\item Write specification in the source file \ref{sec:annotationprocessing}.
+\item Add logic and abstraction rules through jStar verification configuration window \ref{sec:verification}.
+\item Create external class specifications \ref{sec:externalclasses}.
+\end{enumerate}
+
 \end{document}
