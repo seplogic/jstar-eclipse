@@ -33,11 +33,19 @@ public class PreferenceConstants {
 	
 	public final static String VERIFY_AFTER_SAVING = "verifyAfterSavingPreference";
 	
+	public static final String SMT_PATH_PREFERENCE = "smtPathPreference";
+	
+	public static final String SMT_ARGUMENTS_PREFERENCE = "smtArgumentsPreference";
+	
 	public final static String JSTAR_LOGIC_LIBRARY = "JSTAR_LOGIC_LIBRARY";
 	
 	public final static String JSTAR_ABS_LIBRARY = "JSTAR_ABS_LIBRARY";
 	
 	public final static String JSTAR_SPECS_LIBRARY = "JSTAR_SPECS_LIBRARY";
+	
+	public static final String JSTAR_SMT_PATH = "JSTAR_SMT_PATH";
+	
+	public static final String JSTAR_SMT_ARGUMENTS = "JSTAR_SMT_ARGUMENTS";
 	
 	public static String getJStarExecutable() {
 		return getStore().getString(PreferenceConstants.JSTAR_PATH);
@@ -65,6 +73,14 @@ public class PreferenceConstants {
 	
 	public static String getSootClassPathUi() {
 		return getStore().getString(PreferenceConstants.SOOT_CLASSPATH_UI);
+	}
+	
+	public static String getSmtPath() {
+		return getStore().getString(PreferenceConstants.SMT_PATH_PREFERENCE);
+	}
+	
+	public static String getSmtAtguments() {
+		return getStore().getString(PreferenceConstants.SMT_ARGUMENTS_PREFERENCE);
 	}
 	
 	public static String getSootClassPath() {

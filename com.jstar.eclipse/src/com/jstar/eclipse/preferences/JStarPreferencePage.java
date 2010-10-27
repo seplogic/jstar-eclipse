@@ -11,6 +11,7 @@ import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
+import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbench;
@@ -40,6 +41,9 @@ public class JStarPreferencePage
 		else {
 			addField(new FileFieldEditor(PreferenceConstants.SOOT_CLASSPATH_RT, "&rt.jar:", getFieldEditorParent()));
 		}
+		
+		addField(new FileFieldEditor(PreferenceConstants.SMT_PATH_PREFERENCE, "&smt solver executable:", getFieldEditorParent()));
+		addField(new StringFieldEditor(PreferenceConstants.SMT_ARGUMENTS_PREFERENCE, "&smt solver arguments:", getFieldEditorParent()));
 		
 		addField(new BooleanFieldEditor(PreferenceConstants.VERIFY_AFTER_SAVING, "Verify after saving the file", getFieldEditorParent()));
 	}
