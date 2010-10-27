@@ -120,9 +120,13 @@ public class SpecAnnotationProcessor extends AbstractProcessor {
 					elementClass = element.getEnclosingElement();
 				}
 				
+				if (!(elementClass instanceof TypeElement)) {
+					throw new RuntimeException("Unknown kind of element. Currently only class and interface are supported.");
+				}
+				
 				int nameLenght = mirror.getAnnotationType().asElement().getSimpleName().length() + 1;
 														
-				allAnnotations.addAnnotation(cu.getSourceFile().toUri().getPath(), elementClass, element, mirror, sourcePositions.getStartPosition(cu, tree) + 1, sourcePositions.getEndPosition(cu, tree) + nameLenght);
+				allAnnotations.addAnnotation(cu.getSourceFile().toUri().getPath(), (TypeElement)elementClass, element, mirror, sourcePositions.getStartPosition(cu, tree) + 1, sourcePositions.getEndPosition(cu, tree) + nameLenght);
 			}
 		}
 	}

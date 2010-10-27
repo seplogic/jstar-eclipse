@@ -101,9 +101,6 @@ public class JavaFile {
 			if (packages.length == 0) {
 				return "";
 			}
-			else {
-				ConsoleService.getInstance().printErrorMessage("Currently jStar does not support packages");
-			}
 			
 			//ICompilationUnit.getPackageDeclaration documentation: There normally is at most one package declaration.
 			final IPackageDeclaration filePackage = packages[0];

@@ -10,17 +10,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 
 import com.jstar.eclipse.processing.annotations.objects.AnnotationObject;
 
 public class ClassAnnotations {
 	
-	private Element className;
+	private TypeElement className;
 	
 	private Map<AnnotationType, List<AnnotationObject>> annotations;
 	
-	public ClassAnnotations(final Element className) {
+	public ClassAnnotations(final TypeElement className) {
 		this.annotations = new HashMap<AnnotationType, List<AnnotationObject>>();
 		this.className = className;
 	}
@@ -52,7 +52,7 @@ public class ClassAnnotations {
 		return emptyList;
 	}
 
-	public Element getClassName() {
+	public TypeElement getClassName() {
 		return className;
 	}
 

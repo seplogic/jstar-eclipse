@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
-import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 
 import com.jstar.eclipse.processing.annotations.AnnotationType;
 import com.jstar.eclipse.processing.annotations.ClassAnnotations;
@@ -40,7 +40,7 @@ public class AnnotationGeneratorService {
 		}
 		
 		for (ClassAnnotations classAnnotations : fileAnnotations.getClassAnnotations()) {
-			final Element className = classAnnotations.getClassName();
+			final TypeElement className = classAnnotations.getClassName();
 			
 			if (className.getKind().isClass() || className.getKind().isInterface()) {
 				addClassDeclaration(className, writer);
@@ -71,11 +71,11 @@ public class AnnotationGeneratorService {
 		}
 	}
 
-	private void addClassDeclaration(Element className, Writer writer) throws IOException {
+	private void addClassDeclaration(TypeElement className, Writer writer) throws IOException {
 		final StringBuilder classDeclaration = new StringBuilder("\n");
 		classDeclaration.append(className.getKind().toString().toLowerCase());
 		classDeclaration.append(" ");
-		classDeclaration.append(className.getSimpleName().toString()).append(" ");
+		classDeclaration.append(className.getQualifiedName()).append(" ");
 		
 		/*final TypeMirror superClass = ((TypeElement)className).getSuperclass();
 

@@ -12,6 +12,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
@@ -55,7 +56,7 @@ public class AllAnnotations {
 		return isEmpty;
 	}
 	
-	public void addAnnotation(String sourceFileName, Element className, Element element, AnnotationMirror mirror, long startPos, long endPos) {	
+	public void addAnnotation(String sourceFileName, TypeElement className, Element element, AnnotationMirror mirror, long startPos, long endPos) {	
 		final FileAnnotations fileAnnotations = getFileAnnotations(sourceFileName);
 		final ClassAnnotations classAnnotations = fileAnnotations.getClassAnnotations(className);
 		

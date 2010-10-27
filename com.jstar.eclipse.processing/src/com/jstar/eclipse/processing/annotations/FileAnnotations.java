@@ -8,7 +8,7 @@ package com.jstar.eclipse.processing.annotations;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -36,7 +36,7 @@ public class FileAnnotations {
 		return importAnnotations;
 	}
 	
-	public ClassAnnotations getClassAnnotations(final Element className) {
+	public ClassAnnotations getClassAnnotations(final TypeElement className) {
 		for (final ClassAnnotations classAnnotationList : classAnnotations) {
 			if (classAnnotationList.getClassName().equals(className)) {
 				return classAnnotationList;
