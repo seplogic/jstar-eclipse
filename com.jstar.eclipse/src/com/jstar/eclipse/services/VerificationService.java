@@ -88,12 +88,19 @@ public class VerificationService {
 		try {
 			selectedFile.getJavaProject().getGeneratedDir();
 			selectedFile.getOutputDirectory();
-			selectedFile.getGeneratedDir();
 		}
 		catch (FolderNotFoundException fnfe) {
 			final IFolder folder = selectedFile.getJavaProject().getJStarRootFolder();
 			
 			//TODO: refactor
+			Utils.getInstance().createFolder(folder, fnfe.getFolder().getProjectRelativePath().removeFirstSegments(folder.getProjectRelativePath().segmentCount()));
+		}
+		
+		try {
+			selectedFile.getGeneratedDir();
+		}
+		catch (FolderNotFoundException fnfe) {
+			final IFolder folder = selectedFile.getJavaProject().getJStarRootFolder();
 			Utils.getInstance().createFolder(folder, fnfe.getFolder().getProjectRelativePath().removeFirstSegments(folder.getProjectRelativePath().segmentCount()));
 		}
 	}

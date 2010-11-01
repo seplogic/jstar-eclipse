@@ -43,7 +43,6 @@ public class Popl2008Wizard extends Wizard implements INewWizard {
 	@Override
 	public boolean performFinish() {
 		try {
-			
 			final URL examples = FileLocator.find(Activator.getDefault().getBundle(), new Path(Activator.POPL2008_EXAMPLE), null);
 			String examplesLocation = "";
 			

@@ -105,10 +105,13 @@ public class JStar {
 		
 		Map<String, String> env = pb.environment();
 		
-		env.put(PreferenceConstants.JSTAR_LOGIC_LIBRARY, PreferenceConstants.getJStarLogicLibrary());
-		env.put(PreferenceConstants.JSTAR_ABS_LIBRARY, PreferenceConstants.getJStarAbsLibrary());
-		
 		//TODO: jStar accepts only ':' as path separator
+		env.put(PreferenceConstants.JSTAR_LOGIC_LIBRARY, 
+				PreferenceConstants.getJStarLogicLibrary() + ':' + folder.getLocation().toOSString());
+		
+		env.put(PreferenceConstants.JSTAR_ABS_LIBRARY, 
+				PreferenceConstants.getJStarAbsLibrary() + ':' + folder.getLocation().toOSString());
+		
 		env.put(PreferenceConstants.JSTAR_SPECS_LIBRARY,
 				PreferenceConstants.getJStarSpecLibrary() + ':' + folder.getLocation().toOSString());
 		

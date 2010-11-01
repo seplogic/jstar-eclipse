@@ -1,0 +1,12 @@
+import "basic/Cell.logic";
+
+rule sub_eq_hack : 
+| |- !subeq({content=?x; oldcon=?z},{content=?y})
+if
+| |- ?x=?y 
+
+
+rule sub_eq_hack21 : 
+| |- !subeq({content=?x},{content=?y; oldcon=_z})
+if
+| |- ?x=?y 
