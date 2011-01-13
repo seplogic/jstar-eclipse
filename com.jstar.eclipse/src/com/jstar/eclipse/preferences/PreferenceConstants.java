@@ -7,6 +7,7 @@ package com.jstar.eclipse.preferences;
 
 import java.io.File;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.eclipse.jface.preference.IPreferenceStore;
 
@@ -76,7 +77,13 @@ public class PreferenceConstants {
 	}
 	
 	public static String getSmtPath() {
-		return getStore().getString(PreferenceConstants.SMT_PATH_PREFERENCE);
+		final String path = getStore().getString(PreferenceConstants.SMT_PATH_PREFERENCE);
+		
+		if (SystemUtils.IS_OS_WINDOWS) {
+			return StringUtils.replace(path, "\\", "/");
+		}
+		
+		return path;
 	}
 	
 	public static String getSmtAtguments() {
