@@ -67,7 +67,7 @@ public class VerificationService {
 				return;
 			} 
 			
-			executeJStar(selectedFile, !dialog.isSeparateSpec(), dialog.getPrintMode());
+			executeJStar(selectedFile, !dialog.isSeparateSpec(), dialog.getPrintMode(), dialog.retrieveDebugMode());
 		}
 	}
 	
@@ -140,7 +140,6 @@ public class VerificationService {
 		}
 		
 		boolean isSpecInSource = selectedFile.isSpecInSource();			
-		PrintMode mode = selectedFile.getMode();	
 		
 		try {
 			checkInputFiles(selectedFile);
@@ -150,15 +149,15 @@ public class VerificationService {
 			return;
 		}
 				
-		executeJStar(selectedFile, isSpecInSource, mode);
+		executeJStar(selectedFile, isSpecInSource, selectedFile.getMode(), selectedFile.getDebugModeString());
 	}
 	
-	private void executeJStar(final JavaFile selectedFile, final boolean isSpecInSource, final PrintMode mode) {
+	private void executeJStar(final JavaFile selectedFile, final boolean isSpecInSource, final PrintMode mode, final String debugMode) {
 		String specFile = isSpecInSource ? null : selectedFile.getSpecFile().getLocation().toOSString();
 		String logicFile = selectedFile.getLogicFile().getLocation().toOSString();
 		String absFile = selectedFile.getAbsFile().getLocation().toOSString();	
 		
-		VerificationJob job = new VerificationJob("jStar Verification", selectedFile, isSpecInSource, specFile, logicFile, absFile, mode);
+		VerificationJob job = new VerificationJob("jStar Verification", selectedFile, isSpecInSource, specFile, logicFile, absFile, mode, debugMode);
 		job.setPriority(Job.SHORT);
 		job.setRule(getRule());
 		job.schedule(); 

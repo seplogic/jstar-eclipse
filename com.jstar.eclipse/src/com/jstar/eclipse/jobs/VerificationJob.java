@@ -31,8 +31,9 @@ public class VerificationJob extends Job {
 	private String logicFile;
 	private String absFile;
 	private PrintMode mode;
+	private String debugMode;
 
-	public VerificationJob(String name, final JavaFile selectedFile, final boolean isSpecInSource, final String specFile, final String logicFile, final String absFile, final PrintMode mode) {
+	public VerificationJob(String name, final JavaFile selectedFile, final boolean isSpecInSource, final String specFile, final String logicFile, final String absFile, final PrintMode mode, String debugMode) {
 		super(name);
 		this.isSpecInSource = isSpecInSource;
 		this.selectedFile = selectedFile;
@@ -40,6 +41,7 @@ public class VerificationJob extends Job {
 		this.logicFile = logicFile;
 		this.absFile = absFile;
 		this.mode = mode;
+		this.debugMode = debugMode;
 	}
 
 	@Override
@@ -60,7 +62,7 @@ public class VerificationJob extends Job {
 			selectedFile.clearMarkers();
 			
 			for (File jimpleFile : jimpleFiles) {
-				Process pr = JStar.getInstance().executeJStar(selectedFile.getJavaProject().getGeneratedDir(), spec, logicFile, absFile, jimpleFile.getAbsolutePath(), mode);			
+				Process pr = JStar.getInstance().executeJStar(selectedFile.getJavaProject().getGeneratedDir(), spec, logicFile, absFile, jimpleFile.getAbsolutePath(), mode, debugMode);			
 				ConsoleService.getInstance().printToConsole(selectedFile, pr);
 			}
 			

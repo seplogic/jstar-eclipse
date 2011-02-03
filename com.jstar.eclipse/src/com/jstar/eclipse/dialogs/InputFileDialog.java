@@ -9,6 +9,8 @@ package com.jstar.eclipse.dialogs;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
@@ -33,10 +35,16 @@ import com.jstar.eclipse.exceptions.InputFileNotFoundException;
 import com.jstar.eclipse.objects.InputFileKind;
 import com.jstar.eclipse.objects.JavaFile;
 import com.jstar.eclipse.services.ConsoleService;
+import com.jstar.eclipse.services.JStar.DebugMode;
 import com.jstar.eclipse.services.Utils;
 import com.jstar.eclipse.services.JStar.PrintMode;
 
 public class InputFileDialog extends Dialog {
+	private static final String PARSING = "Parsing";
+	private static final String SYMBOLIC = "Symbolic execution";
+	private static final String CORE = "Core flowgraph";
+	private static final String SMT = "Smt solver";
+
 	private JavaFile selectedFile;
 	
 	private Text specField;
@@ -47,8 +55,13 @@ public class InputFileDialog extends Dialog {
 	private String absFieldValue;
 	private String jimpleFile;
 	private PrintMode printMode;
+	private String debugMode;
 	private Button quiet;
 	private Button verbose;
+	private Button parsing;
+	private Button symbolic;
+	private Button core;
+	private Button smt;
 	
 	private Button specSource;
 	private Button specSeparate;
@@ -81,12 +94,41 @@ public class InputFileDialog extends Dialog {
 		addSpecificationGroup(component);
 		addInputFilesGroup(component);
 		addModeGroup(component);
+		addDebugModes(component);
 	    
 	    setDefaultLocations();
 	
 		return parentComponent;
 	}
 	
+	private void addDebugModes(Composite component) {
+		Group group = new Group(component, SWT.SHADOW_IN);
+		group.setText("Debug modes");
+		GridLayout gridLayout = new GridLayout();
+		gridLayout.horizontalSpacing = 10;
+	    gridLayout.verticalSpacing = 10;
+	    group.setLayout(gridLayout);
+	    group.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+	    
+	    parsing = new Button(group, SWT.CHECK);
+	    parsing.setText(PARSING);
+	    parsing.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+	    
+	    symbolic = new Button(group, SWT.CHECK);
+	    symbolic.setText(SYMBOLIC);
+	    symbolic.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+	    
+	    core = new Button(group, SWT.CHECK);
+	    core.setText(CORE);
+	    core.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+	    
+	    smt = new Button(group, SWT.CHECK);
+	    smt.setText(SMT);
+	    smt.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+	    
+	    setDebugModes(selectedFile.getDebugModes());
+	}
+
 	private void addModeGroup(Composite component) {
 	    Group group = new Group(component, SWT.SHADOW_IN);
 	    group.setText("Mode");
@@ -410,7 +452,54 @@ public class InputFileDialog extends Dialog {
 		}
 	}
 	
-    private String loadFile () {
+	private Set<DebugMode> getDebugModes() {
+		final Set<DebugMode> debugModes = new HashSet<DebugMode>();
+		
+		if (parsing.getSelection()) {
+			debugModes.add(DebugMode.PARSING);
+		}
+		
+		if (symbolic.getSelection()) {
+			debugModes.add(DebugMode.SYMBOLIC);
+		}
+		
+		if (core.getSelection()) {
+			debugModes.add(DebugMode.CORE);
+		}
+		
+		if (smt.getSelection()) {
+			debugModes.add(DebugMode.SMT);
+		}
+	
+		return debugModes;
+	}
+	
+	private void setDebugModes(Set<DebugMode> modes) {
+		for (final DebugMode mode : modes) {
+			checkDebugMode(mode);
+		}
+	}
+	
+    private void checkDebugMode(DebugMode mode) {
+    	switch (mode) {
+		case PARSING:
+			parsing.setSelection(true);
+			break;
+		case SYMBOLIC:
+			symbolic.setSelection(true);
+			break;
+		case CORE:
+			core.setSelection(true);
+			break;
+		case SMT:
+			smt.setSelection(true);
+			break;
+		default:
+			break;
+		}
+	}
+
+	private String loadFile () {
         final FileDialog fd = new FileDialog(getShell(), SWT.OPEN);
         fd.setText("Open");      
         return fd.open();
@@ -454,6 +543,9 @@ public class InputFileDialog extends Dialog {
 		final PrintMode mode = getMode();
 		setPrintMode(mode);
 		selectedFile.setMode(mode);
+		final Set<DebugMode> debugModes = getDebugModes();
+		saveDebugMode(debugModes);
+		selectedFile.setDebugModes(debugModes);
 
 		
 		if (specSource.getSelection()) {
@@ -510,6 +602,20 @@ public class InputFileDialog extends Dialog {
 
 	public PrintMode getPrintMode() {
 		return printMode;
+	}
+	
+	public void saveDebugMode(Set<DebugMode> debugModes) {
+		StringBuilder debugMode = new StringBuilder();
+		
+		for (final DebugMode mode : debugModes) {
+			debugMode.append(mode.getCmdOption());
+		}
+		
+		this.debugMode = debugMode.toString();
+	}
+	
+	public String retrieveDebugMode() {
+		return debugMode;
 	}
 
 	public String getJimpleFile() {

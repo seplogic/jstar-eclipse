@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -30,6 +31,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import com.jstar.eclipse.exceptions.FolderNotFoundException;
 import com.jstar.eclipse.exceptions.InputFileNotFoundException;
 import com.jstar.eclipse.services.ConsoleService;
+import com.jstar.eclipse.services.JStar.DebugMode;
 import com.jstar.eclipse.services.JStar.PrintMode;
 
 public class JavaFile {	
@@ -280,6 +282,18 @@ public class JavaFile {
 	
 	public void setMode(final PrintMode mode) {
 		JavaFilePersistentProperties.setMode(this, mode);
+	}
+	
+	public String getDebugModeString() {
+		return JavaFilePersistentProperties.getDebugModeString(this);
+	}
+	
+	public Set<DebugMode> getDebugModes() {
+		return JavaFilePersistentProperties.getDebugModes(this);
+	}
+	
+	public void setDebugModes(final Set<DebugMode> modes) {
+		JavaFilePersistentProperties.setDebugModes(this, modes);
 	}
 	
 	private String getAbsolutePath(IClasspathEntry entry) {

@@ -7,6 +7,7 @@ package com.jstar.eclipse.services;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -16,11 +17,14 @@ import org.apache.commons.lang.SystemUtils;
 
 import com.jstar.eclipse.exceptions.ConfigurationException;
 import com.jstar.eclipse.objects.JavaFile;
+import com.jstar.eclipse.objects.JavaFilePersistentProperties;
 import com.jstar.eclipse.preferences.PreferenceConstants;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.QualifiedName;
 
 public class JStar {
 	
@@ -51,6 +55,29 @@ public class JStar {
 
 		public String getCmdOption() {
 			return cmdOption;
+		}		
+	}
+	
+	public enum DebugMode {
+		PARSING("p", JavaFilePersistentProperties.DM_PARSING),
+		SYMBOLIC("s", JavaFilePersistentProperties.DM_SYMBOLIC),
+		CORE("c", JavaFilePersistentProperties.DM_CORE),
+		SMT("m", JavaFilePersistentProperties.DM_SMT);
+		
+		private final String cmdOption;
+		private final QualifiedName name;
+		
+		DebugMode(String cmdOption, QualifiedName name) {
+			this.cmdOption = cmdOption;
+			this.name = name;
+		}
+
+		public String getCmdOption() {
+			return cmdOption;
+		}
+
+		public QualifiedName getQualifiedName() {
+			return name;
 		}		
 	}
 	
@@ -94,14 +121,27 @@ public class JStar {
 	}
 
 	public Process executeJStar(final IFolder folder, final String spec,
-			final String logic, final String abs, final String jimpleFile, final PrintMode printMode) throws IOException {
+			final String logic, final String abs, final String jimpleFile, final PrintMode printMode, final String debugMode) throws IOException {
 
-		ProcessBuilder pb = new ProcessBuilder(PreferenceConstants.getJStarExecutable(), 
-				"-e", printMode.getCmdOption(),
-				"-l", logic, 
-				"-a", abs, 
-				"-s", spec, 
-				"-f", jimpleFile);
+		final List<String> command = new ArrayList<String>();
+		command.add(PreferenceConstants.getJStarExecutable());
+		command.add("-e");
+		command.add(printMode.getCmdOption());
+		command.add("-l");
+		command.add(logic);
+		command.add("-a");
+		command.add(abs);
+		command.add("-s");
+		command.add(spec);
+		command.add("-f");
+		command.add(jimpleFile);
+		
+		if (StringUtils.isNotBlank(debugMode)) {
+			command.add("-d");
+			command.add(debugMode);
+		}
+		
+		ProcessBuilder pb = new ProcessBuilder(command);
 		
 		Map<String, String> env = pb.environment();
 		
