@@ -120,7 +120,7 @@ public class JStar {
 		return jimpleFiles;
 	}
 
-	public Process executeJStar(final IFolder folder, final String spec,
+	public Process executeJStar(final IFolder workingDirectory, final IFolder folder, final String spec,
 			final String logic, final String abs, final String jimpleFile, final PrintMode printMode, final String debugMode) throws IOException {
 
 		final List<String> command = new ArrayList<String>();
@@ -142,6 +142,7 @@ public class JStar {
 		}
 		
 		ProcessBuilder pb = new ProcessBuilder(command);
+		pb.directory(new File(workingDirectory.getLocation().toOSString()));
 		
 		Map<String, String> env = pb.environment();
 		

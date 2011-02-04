@@ -62,7 +62,7 @@ public class VerificationJob extends Job {
 			selectedFile.clearMarkers();
 			
 			for (File jimpleFile : jimpleFiles) {
-				Process pr = JStar.getInstance().executeJStar(selectedFile.getJavaProject().getGeneratedDir(), spec, logicFile, absFile, jimpleFile.getAbsolutePath(), mode, debugMode);			
+				Process pr = JStar.getInstance().executeJStar(selectedFile.getWorkingDirectory(), selectedFile.getJavaProject().getGeneratedDir(), spec, logicFile, absFile, jimpleFile.getAbsolutePath(), mode, debugMode);			
 				ConsoleService.getInstance().printToConsole(selectedFile, pr);
 			}
 			

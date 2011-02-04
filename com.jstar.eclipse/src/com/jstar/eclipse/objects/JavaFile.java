@@ -62,6 +62,17 @@ public class JavaFile {
 		return outputFolder;
 	}
 	
+	public IFolder getWorkingDirectory() {
+		final IFolder outputFolder = getOutputDirectory();
+		final IFolder workingDirectory = outputFolder.getFolder(getNameWithoutExtension());
+		
+		if (!workingDirectory.exists()) {
+			throw new FolderNotFoundException(workingDirectory);
+		}
+		
+		return workingDirectory;
+	}
+	
 	public IFolder getGeneratedDir() {
 		final IFolder folder = getJavaProject().getGeneratedDir().getFolder(getOutputRelativePath());
 		

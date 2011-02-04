@@ -87,22 +87,38 @@ public class VerificationService {
 		
 		try {
 			selectedFile.getJavaProject().getGeneratedDir();
+		}
+		catch (FolderNotFoundException fnfe) {
+			createFolder(selectedFile, fnfe.getFolder());
+		}
+		
+		try {
 			selectedFile.getOutputDirectory();
 		}
 		catch (FolderNotFoundException fnfe) {
-			final IFolder folder = selectedFile.getJavaProject().getJStarRootFolder();
-			
-			//TODO: refactor
-			Utils.getInstance().createFolder(folder, fnfe.getFolder().getProjectRelativePath().removeFirstSegments(folder.getProjectRelativePath().segmentCount()));
+			createFolder(selectedFile, fnfe.getFolder());
+		}
+		
+		try {
+			selectedFile.getWorkingDirectory();
+		}
+		catch (FolderNotFoundException fnfe) {
+			createFolder(selectedFile, fnfe.getFolder());
 		}
 		
 		try {
 			selectedFile.getGeneratedDir();
 		}
 		catch (FolderNotFoundException fnfe) {
-			final IFolder folder = selectedFile.getJavaProject().getJStarRootFolder();
-			Utils.getInstance().createFolder(folder, fnfe.getFolder().getProjectRelativePath().removeFirstSegments(folder.getProjectRelativePath().segmentCount()));
+			createFolder(selectedFile, fnfe.getFolder());
 		}
+	}
+	
+	private void createFolder(final JavaFile selectedFile, final IFolder folderToCreate) {
+		final IFolder folder = selectedFile.getJavaProject().getJStarRootFolder();
+		
+		//TODO: refactor
+		Utils.getInstance().createFolder(folder, folderToCreate.getProjectRelativePath().removeFirstSegments(folder.getProjectRelativePath().segmentCount()));
 	}
 	
 	private void checkInputFiles(JavaFile selectedFile) throws RequiredResourceNotFoundException {
