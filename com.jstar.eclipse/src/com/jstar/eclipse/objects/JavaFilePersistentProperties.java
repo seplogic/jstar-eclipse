@@ -79,9 +79,14 @@ public class JavaFilePersistentProperties {
 	}
 	
 	public static void setDebugModes(JavaFile javaFile, Set<DebugMode> modes) {
-		for (final DebugMode mode : modes) {
-			setProperty(javaFile.getFile(), mode.getQualifiedName(), "true");
-		}
+		setDebugMode(javaFile, DebugMode.SYMBOLIC, modes.contains(DebugMode.SYMBOLIC));
+		setDebugMode(javaFile, DebugMode.CORE, modes.contains(DebugMode.CORE));
+		setDebugMode(javaFile, DebugMode.PARSING, modes.contains(DebugMode.PARSING));
+		setDebugMode(javaFile, DebugMode.SMT, modes.contains(DebugMode.SMT));
+	}
+	
+	private static void setDebugMode(JavaFile javaFile, DebugMode mode, boolean set) {
+		setProperty(javaFile.getFile(), mode.getQualifiedName(), String.valueOf(set));
 	}
 	
 	public static Set<DebugMode> getDebugModes(JavaFile javaFile) {
