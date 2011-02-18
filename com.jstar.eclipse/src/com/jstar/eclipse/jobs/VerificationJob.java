@@ -32,6 +32,7 @@ public class VerificationJob extends Job {
 	private String absFile;
 	private PrintMode mode;
 	private String debugMode;
+	private Process process;
 
 	public VerificationJob(String name, final JavaFile selectedFile, final boolean isSpecInSource, final String specFile, final String logicFile, final String absFile, final PrintMode mode, String debugMode) {
 		super(name);
@@ -62,8 +63,8 @@ public class VerificationJob extends Job {
 			selectedFile.clearMarkers();
 			
 			for (File jimpleFile : jimpleFiles) {
-				Process pr = JStar.getInstance().executeJStar(selectedFile.getWorkingDirectory(), selectedFile.getJavaProject().getGeneratedDir(), spec, logicFile, absFile, jimpleFile.getAbsolutePath(), mode, debugMode);			
-				ConsoleService.getInstance().printToConsole(selectedFile, pr);
+				process = JStar.getInstance().executeJStar(selectedFile.getWorkingDirectory(), selectedFile.getJavaProject().getGeneratedDir(), spec, logicFile, absFile, jimpleFile.getAbsolutePath(), mode, debugMode);			
+				ConsoleService.getInstance().printToConsole(selectedFile, process);
 			}
 			
 			ConsoleService.getInstance().printToConsole("jStar Verification is completed.");
@@ -82,6 +83,14 @@ public class VerificationJob extends Job {
 		}
 		
 		return Status.OK_STATUS;
+	}
+	
+	protected void canceling() {
+		super.canceling();
+		
+		if (process != null) {
+			process.destroy();
+		}
 	}
 
 }
