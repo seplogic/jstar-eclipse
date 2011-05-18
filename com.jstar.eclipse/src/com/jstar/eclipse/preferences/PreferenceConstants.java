@@ -38,11 +38,11 @@ public class PreferenceConstants {
 	
 	public static final String SMT_ARGUMENTS_PREFERENCE = "smtArgumentsPreference";
 	
-	public final static String JSTAR_LOGIC_LIBRARY = "JSTAR_LOGIC_LIBRARY";
+	public final static String JSTAR_LOGIC_LIBRARY = "CORESTAR_LOGIC_LIBRARY";
 	
-	public final static String JSTAR_ABS_LIBRARY = "JSTAR_ABS_LIBRARY";
+	public final static String JSTAR_ABS_LIBRARY = "CORESTAR_ABS_LIBRARY";
 	
-	public final static String JSTAR_SPECS_LIBRARY = "JSTAR_SPECS_LIBRARY";
+	public final static String JSTAR_SPECS_LIBRARY = "CORESTAR_SPECS_LIBRARY";
 	
 	public static final String JSTAR_SMT_PATH = "JSTAR_SMT_PATH";
 	
