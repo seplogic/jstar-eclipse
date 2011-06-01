@@ -5,8 +5,10 @@
  */
 package com.jstar.eclipse.processing.annotations;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -17,6 +19,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 
+import com.jstar.eclipse.annotations.ExceptionSpec;
 import com.jstar.eclipse.annotations.Import;
 import com.jstar.eclipse.annotations.InitSpec;
 import com.jstar.eclipse.annotations.InitSpecStatic;
@@ -54,6 +57,18 @@ public class AllAnnotations {
 		}
 		
 		return isEmpty;
+	}
+	
+	private Map<String, String> getExceptionPosts(ExceptionSpec[] exceptionSpecs) {
+	    final Map<String, String> excepPosts = new HashMap<String, String>();
+	    
+		if (exceptionSpecs.length > 0) {
+			for (final ExceptionSpec exceptionSpec : exceptionSpecs) {
+				excepPosts.put(exceptionSpec.name(), exceptionSpec.post());
+			}
+		}
+		
+		return excepPosts;
 	}
 	
 	public void addAnnotation(String sourceFileName, TypeElement className, Element element, AnnotationMirror mirror, long startPos, long endPos) {	
@@ -237,6 +252,7 @@ public class AllAnnotations {
 		annotationObject.setPre(specAnnotation.pre());
 		annotationObject.setPost(specAnnotation.post());
 		annotationObject.setMethodDeclaration("void <init>()");
+		annotationObject.setExceptionPosts(getExceptionPosts(specAnnotation.excep()));
 		
 		return annotationObject;
 	}
@@ -247,6 +263,7 @@ public class AllAnnotations {
 		annotationObject.setPost(specAnnotation.post());
 		annotationObject.setStat(true);
 		annotationObject.setMethodDeclaration("void <init>()");
+		annotationObject.setExceptionPosts(getExceptionPosts(specAnnotation.excep()));
 		
 		return annotationObject;
 	}
@@ -263,7 +280,8 @@ public class AllAnnotations {
 	private SpecObject getSpecObject(Spec specAnnotation, Element element, long startPos, long endPos, String sourceFileName) {
 		SpecObject annotationObject = new SpecObject(startPos, endPos, sourceFileName);
 		annotationObject.setPre(specAnnotation.pre());
-		annotationObject.setPost(specAnnotation.post());					
+		annotationObject.setPost(specAnnotation.post());
+		annotationObject.setExceptionPosts(getExceptionPosts(specAnnotation.excep()));
 		
 		return annotationObject;
 	}
@@ -274,6 +292,7 @@ public class AllAnnotations {
 		annotationObject.setPost(specAnnotation.post());					
 		annotationObject.setMethodDeclaration(getMehodDeclaration(element));
 		annotationObject.setStat(true);
+		annotationObject.setExceptionPosts(getExceptionPosts(specAnnotation.excep()));
 		
 		return annotationObject;
 	}	

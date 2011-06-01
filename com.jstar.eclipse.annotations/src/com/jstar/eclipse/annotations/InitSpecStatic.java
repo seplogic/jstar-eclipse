@@ -15,4 +15,5 @@ import java.lang.annotation.Target;
 public @interface InitSpecStatic {
 	String pre();
 	String post();
+	ExceptionSpec[] excep() default {};
 }

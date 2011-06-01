@@ -7,11 +7,13 @@ package com.jstar.eclipse.processing.annotations.objects;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Map;
 
 public class SpecObject extends AnnotationObject {	
 	private String pre;
 	private String post;
 	private String methodDeclaration;
+	private Map<String, String> exceptionPosts;
 	private boolean stat = false;
 	
 	public SpecObject(long startPos, long endPos, String fileName) {
@@ -31,14 +33,17 @@ public class SpecObject extends AnnotationObject {
 	@Override
 	public void generateFile(Writer writer) throws IOException {
 		writer.write("   " + methodDeclaration + appendStatic() + " :\n");
-		writer.write("      { " + pre + " }\n");
-		writer.write("      { " + post + " }\n");
+		generateFileForList(writer);
 		appendPosition(writer);
 	}
 	
 	public void generateFileForList(Writer writer) throws IOException {
 		writer.write("      { " + pre + " }\n");
 		writer.write("      { " + post + " }\n");
+		
+		for (final String name : exceptionPosts.keySet()) {
+			writer.write("      { " + name + " : " + exceptionPosts.get(name) + " }\n");
+		}
 	}
 
 	public void setMethodDeclaration(String methodDeclaration) {
@@ -59,6 +64,10 @@ public class SpecObject extends AnnotationObject {
 		}
 		
 		return "";
+	}
+
+	public void setExceptionPosts(Map<String, String> exceptionPosts) {
+		this.exceptionPosts = exceptionPosts;
 	}
 
 }
